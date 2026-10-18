@@ -1,0 +1,20 @@
+name: kaeli_ui
+description: "Comportamiento del teclado y formularios para las apps Flutter de Kaeli."
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.13.4
+  flutter: ">=3.24.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  # Solo para las pruebas en francés y portugués (MaterialApp necesita las traducciones de Material).
+  flutter_localizations:
+    sdk: flutter
+  flutter_lints: ^6.0.0
