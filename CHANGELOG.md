@@ -1,5 +1,11 @@
 # Cambios
 
+## 0.1.1 (19 oct 2026)
+
+- `kaeliPage`: página de Material para `pageBuilder` de go_router. Con go_router 18.1 y Flutter 3.47, las rutas con
+  solo `builder` salían SIN transición y en iPhone no se podía volver deslizando desde el borde en ninguna pantalla.
+- Prueba: el gesto de volver funciona en una pantalla sin cambios y queda apagado con cambios sin guardar.
+
 ## 0.1.0 (17 oct 2026)
 
 Primera versión, sacada de las correcciones del teclado hechas tras una prueba en iPhone.

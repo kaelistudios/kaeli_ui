@@ -133,6 +133,21 @@ class _EditState extends State<Edit> with KaeliDirtyTracker<Edit> {
   el aviso.
 - `KaeliFormScaffold(appBar:, body:, bottomAction:)` es un atajo de `Scaffold` + `KaeliFormBottomBar`.
 
+### Volver deslizando en iPhone (go_router)
+
+Con go_router 18.1 y Flutter 3.47, las rutas que solo traen `builder` salen **sin transición** y en iPhone no se puede
+volver deslizando desde el borde. Usa `pageBuilder` con `kaeliPage` en cada `GoRoute`:
+
+```dart
+GoRoute(
+  path: '/reserva/:id',
+  pageBuilder: (context, state) => kaeliPage(key: state.pageKey, child: BookingScreen(id: state.pathParameters['id']!)),
+)
+```
+
+Con `Navigator` y `MaterialPageRoute` (sin go_router) no hace falta. `kaeli check` avisa si una app con go_router tiene
+rutas con solo `builder`.
+
 ## Textos e idiomas
 
 Los textos incluidos (barra «Listo» y aviso de cambios) están en español, inglés, francés y portugués; se elige el

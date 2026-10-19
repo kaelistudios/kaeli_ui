@@ -1,6 +1,6 @@
 name: kaeli_ui
 description: "Comportamiento del teclado y formularios para las apps Flutter de Kaeli."
-version: 0.1.0
+version: 0.1.1
 publish_to: none
 
 environment:

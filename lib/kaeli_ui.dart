@@ -7,6 +7,7 @@ export 'src/dirty_tracker.dart';
 export 'src/form_bottom_bar.dart';
 export 'src/keyboard.dart';
 export 'src/keyboard_observer.dart';
+export 'src/page.dart';
 export 'src/strings.dart';
 export 'src/tab_dismiss.dart';
 export 'src/unsaved_changes_guard.dart';
