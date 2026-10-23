@@ -1,6 +1,6 @@
 name: kaeli_ui
-description: "Comportamiento del teclado y formularios para las apps Flutter de Kaeli."
-version: 0.1.1
+description: "Teclado, formularios y selectores para las apps Flutter de Kaeli."
+version: 0.2.0
 publish_to: none
 
 environment:
@@ -10,6 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  # Nombres de los meses en cada idioma (KaeliMonthYearPicker), sin inicializar nada.
+  intl: ">=0.19.0 <1.0.0"
 
 dev_dependencies:
   flutter_test:

@@ -33,7 +33,8 @@ EditableText? focusedEditableText() {
 void dismissKeyboard({bool force = false}) {
   final hadField = focusedEditableText() != null;
   if (hadField) FocusManager.instance.primaryFocus?.unfocus();
-  if (hadField || force) SystemChannels.textInput.invokeMethod<void>('TextInput.hide');
+  if (hadField || force)
+    SystemChannels.textInput.invokeMethod<void>('TextInput.hide');
 }
 
 /// ¿El campo necesita la barra «Listo»? Los de varias líneas (la tecla ↵ escribe un salto de línea) y los numéricos o
@@ -113,12 +114,13 @@ class KaeliKeyboard extends StatelessWidget {
     if (dismissOnTapOutside) {
       result = Actions(
         actions: <Type, Action<Intent>>{
-          EditableTextTapOutsideIntent: CallbackAction<EditableTextTapOutsideIntent>(
-            onInvoke: (intent) {
-              intent.focusNode.unfocus();
-              return null;
-            },
-          ),
+          EditableTextTapOutsideIntent:
+              CallbackAction<EditableTextTapOutsideIntent>(
+                onInvoke: (intent) {
+                  intent.focusNode.unfocus();
+                  return null;
+                },
+              ),
         },
         child: result,
       );
@@ -173,7 +175,8 @@ class _KaeliDoneBarState extends State<_KaeliDoneBar> {
     // Alto de un botón de iOS, o más si el texto del teléfono está muy grande.
     final height = math.max(
       kMinInteractiveDimensionCupertino,
-      media.textScaler.scale(theme.textTheme.labelLarge?.fontSize ?? 14) + 2 * gap,
+      media.textScaler.scale(theme.textTheme.labelLarge?.fontSize ?? 14) +
+          2 * gap,
     );
     final keyboard = media.viewInsets.bottom;
     // La estructura no cambia al mostrar u ocultar la barra: el navegador nunca se vuelve a crear.
@@ -181,7 +184,13 @@ class _KaeliDoneBarState extends State<_KaeliDoneBar> {
       fit: StackFit.passthrough,
       children: [
         MediaQuery(
-          data: _visible ? media.copyWith(viewInsets: media.viewInsets.copyWith(bottom: keyboard + height)) : media,
+          data: _visible
+              ? media.copyWith(
+                  viewInsets: media.viewInsets.copyWith(
+                    bottom: keyboard + height,
+                  ),
+                )
+              : media,
           child: widget.child,
         ),
         if (_visible)
@@ -199,7 +208,9 @@ class _KaeliDoneBarState extends State<_KaeliDoneBar> {
                 child: Align(
                   alignment: AlignmentDirectional.centerEnd,
                   child: Padding(
-                    padding: const EdgeInsetsDirectional.symmetric(horizontal: gap),
+                    padding: const EdgeInsetsDirectional.symmetric(
+                      horizontal: gap,
+                    ),
                     child: TextButton(
                       key: KaeliKeyboard.doneKey,
                       onPressed: () => dismissKeyboard(),

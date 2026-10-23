@@ -15,10 +15,18 @@ Future<void> pumpKaeliApp(
   await tester.pumpWidget(
     MaterialApp(
       locale: locale,
-      supportedLocales: const [Locale('es'), Locale('en'), Locale('fr'), Locale('pt')],
+      supportedLocales: const [
+        Locale('es'),
+        Locale('en'),
+        Locale('fr'),
+        Locale('pt'),
+      ],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
-      builder: (context, child) =>
-          KaeliKeyboard(strings: strings, dismissOnTapOutside: dismissOnTapOutside, child: child!),
+      builder: (context, child) => KaeliKeyboard(
+        strings: strings,
+        dismissOnTapOutside: dismissOnTapOutside,
+        child: child!,
+      ),
       navigatorObservers: [KaeliKeyboardObserver()],
       home: home,
     ),
@@ -46,7 +54,11 @@ class TestForm extends StatelessWidget {
         const TextField(key: Key('multi'), maxLines: null),
         const TextField(key: Key('number'), keyboardType: TextInputType.number),
         const TextField(key: Key('phone'), keyboardType: TextInputType.phone),
-        TextButton(key: const Key('button'), onPressed: onButton, child: const Text('Botón')),
+        TextButton(
+          key: const Key('button'),
+          onPressed: onButton,
+          child: const Text('Botón'),
+        ),
         const SizedBox(height: 2000, child: Text('Relleno')),
       ],
     ),
@@ -64,7 +76,8 @@ class Opener extends StatelessWidget {
     body: Center(
       child: TextButton(
         key: const Key('open'),
-        onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: page)),
+        onPressed: () =>
+            Navigator.of(context).push(MaterialPageRoute<void>(builder: page)),
         child: const Text('Abrir'),
       ),
     ),
@@ -72,7 +85,10 @@ class Opener extends StatelessWidget {
 }
 
 /// Corre [body] como si fuera [platform] y deja todo como estaba.
-Future<void> onPlatform(TargetPlatform platform, Future<void> Function() body) async {
+Future<void> onPlatform(
+  TargetPlatform platform,
+  Future<void> Function() body,
+) async {
   debugDefaultTargetPlatformOverride = platform;
   try {
     await body();

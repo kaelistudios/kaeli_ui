@@ -1,5 +1,17 @@
 # Cambios
 
+## 0.2.0 (23 oct 2026)
+
+- **Regla nueva para todas las apps:** `KaeliFormBottomBar` y `KaeliFormScaffold` ya **no suben con el teclado**. El
+  botón se queda en su lugar; el contenido se achica hasta el teclado (y la barra «Listo») y el formulario se desplaza
+  solo para que el campo que se escribe no quede tapado. `KaeliFormScaffold` deja `resizeToAvoidBottomInset`
+  encendido.
+- `showKaeliMonthYearPicker` / `KaeliMonthYearPicker`: hoja con ruedas de mes y año (✕ y ✓), igual en iPhone y
+  Android, con los colores del tema y los meses en el idioma de la app. Nueva dependencia: `intl`.
+- Textos nuevos `cancel` y `confirm` en `KaeliUiStrings` (4 idiomas).
+- Pruebas: el botón no se mueve con el teclado y el campo activo queda visible (también con la barra «Listo»); el
+  selector en 4 idiomas, ✕, ✓ y el rango.
+
 ## 0.1.1 (19 oct 2026)
 
 - `kaeliPage`: página de Material para `pageBuilder` de go_router. Con go_router 18.1 y Flutter 3.47, las rutas con

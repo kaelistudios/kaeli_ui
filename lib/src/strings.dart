@@ -22,6 +22,8 @@ class KaeliUiStrings {
     this.discardMessage,
     this.discard,
     this.keepEditing,
+    this.cancel,
+    this.confirm,
   });
 
   /// Botón de la barra sobre el teclado de iPhone («Listo»).
@@ -39,6 +41,12 @@ class KaeliUiStrings {
   /// Botón que se queda en el formulario («Seguir editando»).
   final String? keepEditing;
 
+  /// ✕ del selector de mes y año (lo lee el lector de pantalla: «Cancelar»).
+  final String? cancel;
+
+  /// ✓ del selector de mes y año («Aceptar»).
+  final String? confirm;
+
   /// Textos incluidos, por código de idioma.
   static const Map<String, KaeliUiStrings> builtIn = {
     'es': KaeliUiStrings(
@@ -47,6 +55,8 @@ class KaeliUiStrings {
       discardMessage: 'Hiciste cambios que todavía no guardaste.',
       discard: 'Descartar',
       keepEditing: 'Seguir editando',
+      cancel: 'Cancelar',
+      confirm: 'Aceptar',
     ),
     'en': KaeliUiStrings(
       done: 'Done',
@@ -54,13 +64,18 @@ class KaeliUiStrings {
       discardMessage: "You made changes you haven't saved yet.",
       discard: 'Discard',
       keepEditing: 'Keep editing',
+      cancel: 'Cancel',
+      confirm: 'OK',
     ),
     'fr': KaeliUiStrings(
       done: 'OK',
       discardTitle: 'Abandonner les modifications ?',
-      discardMessage: 'Vous avez des modifications qui ne sont pas encore enregistrées.',
+      discardMessage:
+          'Vous avez des modifications qui ne sont pas encore enregistrées.',
       discard: 'Abandonner',
       keepEditing: 'Continuer',
+      cancel: 'Annuler',
+      confirm: 'Valider',
     ),
     'pt': KaeliUiStrings(
       done: 'OK',
@@ -68,11 +83,16 @@ class KaeliUiStrings {
       discardMessage: 'Você fez alterações que ainda não salvou.',
       discard: 'Descartar',
       keepEditing: 'Continuar editando',
+      cancel: 'Cancelar',
+      confirm: 'Confirmar',
     ),
   };
 
   /// Textos completos para [languageCode] (inglés si no está), con lo de [overrides] encima.
-  static KaeliUiTexts resolve(String? languageCode, [KaeliUiStrings? overrides]) {
+  static KaeliUiTexts resolve(
+    String? languageCode, [
+    KaeliUiStrings? overrides,
+  ]) {
     final base = builtIn[languageCode] ?? builtIn['en']!;
     return KaeliUiTexts(
       done: overrides?.done ?? base.done!,
@@ -80,6 +100,8 @@ class KaeliUiStrings {
       discardMessage: overrides?.discardMessage ?? base.discardMessage!,
       discard: overrides?.discard ?? base.discard!,
       keepEditing: overrides?.keepEditing ?? base.keepEditing!,
+      cancel: overrides?.cancel ?? base.cancel!,
+      confirm: overrides?.confirm ?? base.confirm!,
     );
   }
 
@@ -92,6 +114,8 @@ class KaeliUiStrings {
           discardMessage: other.discardMessage ?? discardMessage,
           discard: other.discard ?? discard,
           keepEditing: other.keepEditing ?? keepEditing,
+          cancel: other.cancel ?? cancel,
+          confirm: other.confirm ?? confirm,
         );
 }
 
@@ -104,6 +128,8 @@ class KaeliUiTexts {
     required this.discardMessage,
     required this.discard,
     required this.keepEditing,
+    required this.cancel,
+    required this.confirm,
   });
 
   final String done;
@@ -111,22 +137,33 @@ class KaeliUiTexts {
   final String discardMessage;
   final String discard;
   final String keepEditing;
+  final String cancel;
+  final String confirm;
 
   /// Textos para [context]: idioma de `Localizations`, cambios de [KaeliKeyboard] y, encima, [overrides].
   static KaeliUiTexts of(BuildContext context, [KaeliUiStrings? overrides]) {
-    final scope = context.dependOnInheritedWidgetOfExactType<KaeliUiStringsScope>();
+    final scope = context
+        .dependOnInheritedWidgetOfExactType<KaeliUiStringsScope>();
     final merged = (scope?.strings ?? const KaeliUiStrings()).merge(overrides);
-    return KaeliUiStrings.resolve(Localizations.maybeLocaleOf(context)?.languageCode, merged);
+    return KaeliUiStrings.resolve(
+      Localizations.maybeLocaleOf(context)?.languageCode,
+      merged,
+    );
   }
 }
 
 /// Lleva los textos cambiados de [KaeliKeyboard] a todas las pantallas (lo pone [KaeliKeyboard]; no hace falta usarlo
 /// a mano).
 class KaeliUiStringsScope extends InheritedWidget {
-  const KaeliUiStringsScope({super.key, required this.strings, required super.child});
+  const KaeliUiStringsScope({
+    super.key,
+    required this.strings,
+    required super.child,
+  });
 
   final KaeliUiStrings? strings;
 
   @override
-  bool updateShouldNotify(KaeliUiStringsScope oldWidget) => strings != oldWidget.strings;
+  bool updateShouldNotify(KaeliUiStringsScope oldWidget) =>
+      strings != oldWidget.strings;
 }

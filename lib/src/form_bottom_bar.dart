@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Barra de la acción principal de un formulario (p. ej. «Guardar») que **siempre se ve**, también con el teclado
-/// abierto. Va en `Scaffold.bottomNavigationBar`:
+/// Barra de la acción principal de un formulario (p. ej. «Guardar»), fija abajo. Va en `Scaffold.bottomNavigationBar`:
 ///
 /// ```dart
 /// Scaffold(
@@ -13,9 +12,11 @@ import 'package:flutter/material.dart';
 /// )
 /// ```
 ///
-/// El `Scaffold` deja la barra inferior detrás del teclado; esta barra se sube sola con el alto del teclado
-/// (`MediaQuery.viewInsets`, que incluye la barra «Listo» de [KaeliKeyboard]) y respeta la zona segura (la raya de
-/// inicio del iPhone) cuando el teclado está cerrado.
+/// Regla de Kaeli (desde 0.2.0): el botón **se queda en su lugar** y no sube con el teclado. Con el teclado abierto,
+/// el `Scaffold` achica el contenido hasta el borde del teclado (y de la barra «Listo» de [KaeliKeyboard], que suma su
+/// alto a `MediaQuery.viewInsets`) y el formulario se desplaza solo para que el campo que se escribe no quede tapado.
+/// Para guardar, se cierra el teclado (tocando fuera, deslizando o con «Listo») y el botón vuelve a verse. Respeta la
+/// zona segura de abajo (la raya de inicio del iPhone).
 class KaeliFormBottomBar extends StatelessWidget {
   const KaeliFormBottomBar({
     super.key,
@@ -48,19 +49,21 @@ class KaeliFormBottomBar extends StatelessWidget {
       bar = DecoratedBox(
         decoration: BoxDecoration(
           color: color,
-          border: showDivider ? Border(top: BorderSide(color: colors.outlineVariant)) : null,
+          border: showDivider
+              ? Border(top: BorderSide(color: colors.outlineVariant))
+              : null,
         ),
         child: bar,
       );
     }
-    return Padding(
-      padding: EdgeInsetsDirectional.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
-      child: bar,
-    );
+    return bar;
   }
 }
 
 /// `Scaffold` de formulario: barra superior, contenido y [KaeliFormBottomBar] con [bottomAction].
+///
+/// El contenido se achica con el teclado (`resizeToAvoidBottomInset`) para que el campo activo se vea; el botón queda
+/// fijo abajo, detrás del teclado.
 ///
 /// Atajo para lo más común; para algo distinto, usa un `Scaffold` con [KaeliFormBottomBar].
 class KaeliFormScaffold extends StatelessWidget {
@@ -83,7 +86,10 @@ class KaeliFormScaffold extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
     appBar: appBar,
     backgroundColor: backgroundColor,
+    resizeToAvoidBottomInset: true,
     body: body,
-    bottomNavigationBar: bottomAction == null ? null : KaeliFormBottomBar(child: bottomAction!),
+    bottomNavigationBar: bottomAction == null
+        ? null
+        : KaeliFormBottomBar(child: bottomAction!),
   );
 }

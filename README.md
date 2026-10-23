@@ -1,7 +1,7 @@
 # kaeli_ui
 
-Paquete Flutter compartido por las apps de Kaeli. Esta primera versión resuelve el
-**teclado** y los **formularios**, y funciona con cualquier app: no depende de go_router, Riverpod ni de los temas o
+Paquete Flutter compartido por las apps de Kaeli. Resuelve el **teclado**, los **formularios** y el selector de
+**mes y año**, y funciona con cualquier app: no depende de go_router, Riverpod ni de los temas o
 traducciones de ninguna app. Los colores salen del tema de cada app (`Theme.of(context)`).
 
 ## Qué resuelve
@@ -15,7 +15,8 @@ En una prueba en iPhone (18 oct 2026) encontramos estos problemas con el teclado
 | Los campos de varias líneas, numéricos y de teléfono no tienen tecla para cerrar el teclado. | Barra «Listo» encima del teclado (solo iPhone/iPad). |
 | Al volver a la pantalla anterior (flecha o gesto de deslizar), el teclado quedaba abierto. | `KaeliKeyboardObserver` lo cierra en cada cambio de pantalla y apenas empieza el gesto de volver. |
 | Al cambiar de pestaña, el teclado seguía abierto (la pestaña de antes sigue montada). | `KaeliTabDismiss` lo cierra al cambiar de pestaña. |
-| El botón «Guardar» quedaba tapado por el teclado. | `KaeliFormBottomBar` lo sube con el teclado (y por encima de la barra «Listo»). |
+| El botón «Guardar» saltaba con el teclado y tapaba el formulario. | **Regla (0.2.0):** `KaeliFormBottomBar` se queda en su lugar; el contenido se achica hasta el teclado (y la barra «Listo») y se desplaza solo para que el campo que se escribe se vea. Para guardar, se cierra el teclado. |
+| Cambiar de mes en un calendario pedía tocar la flecha muchas veces. | `showKaeliMonthYearPicker`: hoja con ruedas de mes y año (✕ y ✓), igual en iPhone y Android. |
 | Salir de un formulario perdía los cambios sin avisar. | `KaeliUnsavedChangesGuard` pregunta «¿Descartar cambios?» (Descartar / Seguir editando). |
 
 ## Instalación
@@ -27,7 +28,7 @@ dependencies:
   kaeli_ui:
     git:
       url: https://github.com/kaelistudios/kaeli_ui.git
-      ref: v0.1.0
+      ref: v0.2.0
 ```
 
 Después: `flutter pub get` e `import 'package:kaeli_ui/kaeli_ui.dart';`.
@@ -132,6 +133,10 @@ class _EditState extends State<Edit> with KaeliDirtyTracker<Edit> {
 - Con cambios, el gesto de deslizar para volver de iPhone queda apagado (así funciona `PopScope`); la flecha muestra
   el aviso.
 - `KaeliFormScaffold(appBar:, body:, bottomAction:)` es un atajo de `Scaffold` + `KaeliFormBottomBar`.
+- **Regla de Kaeli para todas las apps:** el botón principal o «Guardar» del final de un formulario **no sube con el
+  teclado**. El `Scaffold` (con `resizeToAvoidBottomInset`, que viene encendido) achica el contenido y Flutter desplaza
+  el campo activo para que no quede tapado; el cuerpo tiene que poder desplazarse (`ListView`,
+  `SingleChildScrollView`…). No pongas el botón dentro de un `Padding` con `MediaQuery.viewInsets`.
 
 ### Volver deslizando en iPhone (go_router)
 
@@ -148,9 +153,28 @@ GoRoute(
 Con `Navigator` y `MaterialPageRoute` (sin go_router) no hace falta. `kaeli check` avisa si una app con go_router tiene
 rutas con solo `builder`.
 
+### Mes y año con ruedas: `showKaeliMonthYearPicker`
+
+En todo calendario o selector de fecha, tocar el mes y el año abre una hoja desde abajo con dos ruedas (meses y años),
+como el selector de hora del iPhone, con ✕ (cancelar) y ✓ (aceptar). Igual en iPhone y Android.
+
+```dart
+final month = await showKaeliMonthYearPicker(
+  context,
+  initial: visibleMonth,          // cualquier día del mes
+  title: l10n.chooseMonth,        // opcional
+);
+if (month != null) setState(() => visibleMonth = month); // primer día del mes elegido
+```
+
+- Rango por defecto: de 5 años atrás a 10 adelante (siempre incluye `initial`); `first:` y `last:` lo cambian.
+- Meses en el idioma de la app (datos de `intl`, sin inicializar nada); `monthNames:` los cambia.
+- Colores y letras del tema (`ColorScheme`, `TextTheme`); la rueda crece con la letra del teléfono.
+- `KaeliMonthYearPicker` es el contenido, por si se quiere poner en otro lugar.
+
 ## Textos e idiomas
 
-Los textos incluidos (barra «Listo» y aviso de cambios) están en español, inglés, francés y portugués; se elige el
+Los textos incluidos (barra «Listo», aviso de cambios y ✕/✓ del selector de mes y año) están en español, inglés, francés y portugués; se elige el
 idioma de la app (`Localizations.localeOf(context)`) y, si no está, inglés. Para cambiar uno o varios:
 
 ```dart

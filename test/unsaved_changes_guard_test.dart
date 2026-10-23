@@ -78,13 +78,26 @@ class _NotifierEditState extends State<_NotifierEdit> {
     listenable: _dirty,
     child: Scaffold(
       appBar: AppBar(title: const Text('Editar')),
-      body: TextFormField(key: const Key('name'), onChanged: (_) => _dirty.value = true),
+      body: TextFormField(
+        key: const Key('name'),
+        onChanged: (_) => _dirty.value = true,
+      ),
     ),
   );
 }
 
-Future<void> _open(WidgetTester tester, Widget page, {Locale locale = const Locale('es'), KaeliUiStrings? strings}) async {
-  await pumpKaeliApp(tester, Opener(page: (_) => page), locale: locale, strings: strings);
+Future<void> _open(
+  WidgetTester tester,
+  Widget page, {
+  Locale locale = const Locale('es'),
+  KaeliUiStrings? strings,
+}) async {
+  await pumpKaeliApp(
+    tester,
+    Opener(page: (_) => page),
+    locale: locale,
+    strings: strings,
+  );
   await tester.tap(find.byKey(const Key('open')));
   await tester.pumpAndSettle();
 }
@@ -98,30 +111,35 @@ void main() {
     expect(find.byKey(const Key('open')), findsOneWidget);
   });
 
-  testWidgets('con cambios pregunta: «Seguir editando» se queda, «Descartar» vuelve', (tester) async {
-    await _open(tester, const _Edit());
-    await tester.enterText(find.byKey(const Key('name')), 'Casa Colibrí 2');
-    await tester.pumpAndSettle();
+  testWidgets(
+    'con cambios pregunta: «Seguir editando» se queda, «Descartar» vuelve',
+    (tester) async {
+      await _open(tester, const _Edit());
+      await tester.enterText(find.byKey(const Key('name')), 'Casa Colibrí 2');
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.byType(BackButton));
-    await tester.pumpAndSettle();
-    expect(find.text('¿Descartar cambios?'), findsOneWidget);
-    await tester.tap(find.text('Seguir editando'));
-    await tester.pumpAndSettle();
-    expect(find.byKey(const Key('name')), findsOneWidget);
-    expect(find.text('Casa Colibrí 2'), findsOneWidget);
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+      expect(find.text('¿Descartar cambios?'), findsOneWidget);
+      await tester.tap(find.text('Seguir editando'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('name')), findsOneWidget);
+      expect(find.text('Casa Colibrí 2'), findsOneWidget);
 
-    // Atrás del sistema (Android) también pregunta.
-    await tester.binding.handlePopRoute();
-    await tester.pumpAndSettle();
-    expect(find.text('¿Descartar cambios?'), findsOneWidget);
-    await tester.tap(find.text('Descartar'));
-    await tester.pumpAndSettle();
-    expect(find.byKey(const Key('name')), findsNothing);
-    expect(find.byKey(const Key('open')), findsOneWidget);
-  });
+      // Atrás del sistema (Android) también pregunta.
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.text('¿Descartar cambios?'), findsOneWidget);
+      await tester.tap(find.text('Descartar'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('name')), findsNothing);
+      expect(find.byKey(const Key('open')), findsOneWidget);
+    },
+  );
 
-  testWidgets('volver a dejar el valor original ya no pregunta', (tester) async {
+  testWidgets('volver a dejar el valor original ya no pregunta', (
+    tester,
+  ) async {
     await _open(tester, const _Edit());
     await tester.enterText(find.byKey(const Key('name')), 'Otra');
     await tester.pumpAndSettle();
@@ -133,7 +151,9 @@ void main() {
     expect(find.byKey(const Key('open')), findsOneWidget);
   });
 
-  testWidgets('un cambio que no es de texto (conjunto) también cuenta', (tester) async {
+  testWidgets('un cambio que no es de texto (conjunto) también cuenta', (
+    tester,
+  ) async {
     await _open(tester, const _Edit());
     await tester.tap(find.byKey(const Key('tag')));
     await tester.pumpAndSettle();
@@ -152,7 +172,9 @@ void main() {
     expect(find.byKey(const Key('open')), findsOneWidget);
   });
 
-  testWidgets('con cambios el gesto de volver de iPhone no sale', (tester) async {
+  testWidgets('con cambios el gesto de volver de iPhone no sale', (
+    tester,
+  ) async {
     await onPlatform(TargetPlatform.iOS, () async {
       await _open(tester, const _Edit());
       await tester.enterText(find.byKey(const Key('name')), 'Otra');
@@ -167,7 +189,11 @@ void main() {
     await _open(tester, const _NotifierEdit());
     await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('open')), findsOneWidget, reason: 'sin cambios sale');
+    expect(
+      find.byKey(const Key('open')),
+      findsOneWidget,
+      reason: 'sin cambios sale',
+    );
 
     await tester.tap(find.byKey(const Key('open')));
     await tester.pumpAndSettle();
@@ -201,7 +227,23 @@ void main() {
   });
 
   test('kaeliSnapshotEquals compara por contenido', () {
-    expect(kaeliSnapshotEquals([1, {'a': {2}}], [1, {'a': {2}}]), isTrue);
+    expect(
+      kaeliSnapshotEquals(
+        [
+          1,
+          {
+            'a': {2},
+          },
+        ],
+        [
+          1,
+          {
+            'a': {2},
+          },
+        ],
+      ),
+      isTrue,
+    );
     expect(kaeliSnapshotEquals([1, 2], [1, 3]), isFalse);
     expect(kaeliSnapshotEquals({'a': 1}, {'b': 1}), isFalse);
     expect(kaeliSnapshotEquals(('x', 1), ('x', 1)), isTrue);
