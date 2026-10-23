@@ -28,11 +28,7 @@ abstract final class KaeliTabDismiss {
 
   /// Cierra el teclado y llama a `goBranch` de `StatefulNavigationShell`. Tocar la pestaña en la que ya se está
   /// ([currentIndex]) vuelve a su primera pantalla (`initialLocation: true`), como hacen las apps del sistema.
-  static void goBranch(
-    int index,
-    void Function(int index, {bool initialLocation}) goBranch, {
-    int? currentIndex,
-  }) {
+  static void goBranch(int index, void Function(int index, {bool initialLocation}) goBranch, {int? currentIndex}) {
     dismissKeyboard(force: true);
     goBranch(index, initialLocation: index == currentIndex);
   }

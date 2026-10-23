@@ -1,5 +1,9 @@
 include: package:flutter_lints/flutter.yaml
 
+# Líneas de 120 columnas (así está escrito el paquete); `dart format` lo respeta.
+formatter:
+  page_width: 120
+
 analyzer:
   exclude:
     - example/**

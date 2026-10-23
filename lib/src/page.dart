@@ -16,15 +16,11 @@ import 'package:flutter/material.dart';
 ///
 /// Con cambios sin guardar, [KaeliUnsavedChangesGuard] sigue apagando el gesto (y la flecha pregunta «¿Descartar
 /// cambios?»).
-Page<T> kaeliPage<T>({
-  required LocalKey key,
-  required Widget child,
-  String? name,
-  bool fullscreenDialog = false,
-}) => MaterialPage<T>(
-  key: key,
-  name: name,
-  restorationId: key is ValueKey<String> ? key.value : null,
-  fullscreenDialog: fullscreenDialog,
-  child: child,
-);
+Page<T> kaeliPage<T>({required LocalKey key, required Widget child, String? name, bool fullscreenDialog = false}) =>
+    MaterialPage<T>(
+      key: key,
+      name: name,
+      restorationId: key is ValueKey<String> ? key.value : null,
+      fullscreenDialog: fullscreenDialog,
+      child: child,
+    );

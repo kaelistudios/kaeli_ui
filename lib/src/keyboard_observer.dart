@@ -33,28 +33,20 @@ import 'keyboard.dart';
 /// El navegador avisa mientras cambia sus pantallas (a veces en medio de la construcción del árbol): el teclado se
 /// cierra justo después, en una microtarea, cuando el árbol ya está estable (y antes de que se dibuje el cuadro).
 class KaeliKeyboardObserver extends NavigatorObserver {
-  void _dismiss({bool force = false}) =>
-      scheduleMicrotask(() => dismissKeyboard(force: force));
+  void _dismiss({bool force = false}) => scheduleMicrotask(() => dismissKeyboard(force: force));
 
   @override
-  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) =>
-      _dismiss();
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) => _dismiss();
 
   @override
-  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) =>
-      _dismiss(force: true);
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) => _dismiss(force: true);
 
   @override
-  void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) =>
-      _dismiss(force: true);
+  void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) => _dismiss(force: true);
 
   @override
-  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) =>
-      _dismiss(force: true);
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) => _dismiss(force: true);
 
   @override
-  void didStartUserGesture(
-    Route<dynamic> route,
-    Route<dynamic>? previousRoute,
-  ) => _dismiss();
+  void didStartUserGesture(Route<dynamic> route, Route<dynamic>? previousRoute) => _dismiss();
 }

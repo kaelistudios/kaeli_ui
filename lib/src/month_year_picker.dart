@@ -74,12 +74,7 @@ class KaeliMonthYearPicker extends StatefulWidget {
   static const yearWheelKey = Key('kaeli-year-wheel');
 
   /// Rango por defecto: de 5 años atrás a 10 adelante de [now], estirado para incluir [initial].
-  static (DateTime, DateTime) defaultRange(
-    DateTime initial,
-    DateTime now, {
-    DateTime? first,
-    DateTime? last,
-  }) {
+  static (DateTime, DateTime) defaultRange(DateTime initial, DateTime now, {DateTime? first, DateTime? last}) {
     var from = first ?? DateTime(now.year - 5);
     var to = last ?? DateTime(now.year + 10, 12);
     if (initial.isBefore(from)) from = DateTime(initial.year, initial.month);
@@ -91,21 +86,14 @@ class KaeliMonthYearPicker extends StatefulWidget {
   static List<String> monthNamesFor(Locale locale) {
     final symbols = dateTimeSymbolMap();
     DateSymbols? found;
-    for (final tag in [
-      Intl.canonicalizedLocale(locale.toString()),
-      locale.languageCode,
-      'en',
-    ]) {
+    for (final tag in [Intl.canonicalizedLocale(locale.toString()), locale.languageCode, 'en']) {
       final s = symbols[tag];
       if (s is DateSymbols) {
         found = s;
         break;
       }
     }
-    return [
-      for (final m in found!.STANDALONEMONTHS)
-        m.isEmpty ? m : m[0].toUpperCase() + m.substring(1),
-    ];
+    return [for (final m in found!.STANDALONEMONTHS) m.isEmpty ? m : m[0].toUpperCase() + m.substring(1)];
   }
 
   @override
@@ -157,17 +145,11 @@ class _KaeliMonthYearPickerState extends State<KaeliMonthYearPicker> {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final texts = KaeliUiTexts.of(context, widget.strings);
-    final names =
-        widget.monthNames ??
-        KaeliMonthYearPicker.monthNamesFor(Localizations.localeOf(context));
+    final names = widget.monthNames ?? KaeliMonthYearPicker.monthNamesFor(Localizations.localeOf(context));
     final scaler = MediaQuery.textScalerOf(context);
-    final style = (theme.textTheme.titleMedium ?? const TextStyle()).copyWith(
-      color: colors.onSurface,
-    );
+    final style = (theme.textTheme.titleMedium ?? const TextStyle()).copyWith(color: colors.onSurface);
     final itemExtent = scaler.scale((style.fontSize ?? 16) * 2.2);
-    final overlay = CupertinoPickerDefaultSelectionOverlay(
-      background: colors.primary.withValues(alpha: 0.12),
-    );
+    final overlay = CupertinoPickerDefaultSelectionOverlay(background: colors.primary.withValues(alpha: 0.12));
 
     Widget wheel({
       required Key key,
@@ -187,12 +169,7 @@ class _KaeliMonthYearPickerState extends State<KaeliMonthYearPicker> {
         onSelectedItemChanged: onChanged,
         childCount: count,
         itemBuilder: (context, i) => Center(
-          child: Text(
-            label(i),
-            style: style,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
+          child: Text(label(i), style: style, maxLines: 1, overflow: TextOverflow.ellipsis),
         ),
       ),
     );
@@ -206,17 +183,11 @@ class _KaeliMonthYearPickerState extends State<KaeliMonthYearPicker> {
             padding: const EdgeInsetsDirectional.fromSTEB(4, 4, 4, 0),
             child: Row(
               children: [
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  tooltip: texts.cancel,
-                  onPressed: widget.onCancel,
-                ),
+                IconButton(icon: const Icon(Icons.close), tooltip: texts.cancel, onPressed: widget.onCancel),
                 Expanded(
                   child: Text(
                     widget.title ?? '',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: colors.onSurface,
-                    ),
+                    style: theme.textTheme.titleMedium?.copyWith(color: colors.onSurface),
                     textAlign: TextAlign.center,
                     maxLines: 2,
                   ),

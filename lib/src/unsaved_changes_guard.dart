@@ -58,9 +58,7 @@ class KaeliUnsavedChangesGuard extends StatelessWidget {
 
   bool _hasChanges() {
     final l = listenable;
-    return dirty ||
-        (isDirty?.call() ?? false) ||
-        (l is ValueListenable<bool> && l.value);
+    return dirty || (isDirty?.call() ?? false) || (l is ValueListenable<bool> && l.value);
   }
 
   @override
@@ -69,10 +67,7 @@ class KaeliUnsavedChangesGuard extends StatelessWidget {
     Form.maybeOf(context);
     final l = listenable;
     if (l == null) return _scope(context);
-    return ListenableBuilder(
-      listenable: l,
-      builder: (context, _) => _scope(context),
-    );
+    return ListenableBuilder(listenable: l, builder: (context, _) => _scope(context));
   }
 
   Widget _scope(BuildContext context) => PopScope<Object?>(
@@ -87,9 +82,7 @@ class KaeliUnsavedChangesGuard extends StatelessWidget {
         navigator.pop(result);
         return;
       }
-      final leave =
-          await (confirmDiscard?.call(context) ??
-              showKaeliDiscardDialog(context, strings: strings));
+      final leave = await (confirmDiscard?.call(context) ?? showKaeliDiscardDialog(context, strings: strings));
       if (leave && context.mounted) navigator.pop(result);
     },
     child: child,
@@ -97,10 +90,7 @@ class KaeliUnsavedChangesGuard extends StatelessWidget {
 }
 
 /// Diálogo «¿Descartar cambios?». Devuelve true si se elige «Descartar».
-Future<bool> showKaeliDiscardDialog(
-  BuildContext context, {
-  KaeliUiStrings? strings,
-}) async {
+Future<bool> showKaeliDiscardDialog(BuildContext context, {KaeliUiStrings? strings}) async {
   final texts = KaeliUiTexts.of(context, strings);
   final result = await showDialog<bool>(
     context: context,

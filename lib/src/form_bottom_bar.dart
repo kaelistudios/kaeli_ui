@@ -49,9 +49,7 @@ class KaeliFormBottomBar extends StatelessWidget {
       bar = DecoratedBox(
         decoration: BoxDecoration(
           color: color,
-          border: showDivider
-              ? Border(top: BorderSide(color: colors.outlineVariant))
-              : null,
+          border: showDivider ? Border(top: BorderSide(color: colors.outlineVariant)) : null,
         ),
         child: bar,
       );
@@ -67,13 +65,7 @@ class KaeliFormBottomBar extends StatelessWidget {
 ///
 /// Atajo para lo más común; para algo distinto, usa un `Scaffold` con [KaeliFormBottomBar].
 class KaeliFormScaffold extends StatelessWidget {
-  const KaeliFormScaffold({
-    super.key,
-    this.appBar,
-    required this.body,
-    this.bottomAction,
-    this.backgroundColor,
-  });
+  const KaeliFormScaffold({super.key, this.appBar, required this.body, this.bottomAction, this.backgroundColor});
 
   final PreferredSizeWidget? appBar;
   final Widget body;
@@ -88,8 +80,6 @@ class KaeliFormScaffold extends StatelessWidget {
     backgroundColor: backgroundColor,
     resizeToAvoidBottomInset: true,
     body: body,
-    bottomNavigationBar: bottomAction == null
-        ? null
-        : KaeliFormBottomBar(child: bottomAction!),
+    bottomNavigationBar: bottomAction == null ? null : KaeliFormBottomBar(child: bottomAction!),
   );
 }

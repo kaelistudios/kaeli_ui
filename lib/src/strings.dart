@@ -70,8 +70,7 @@ class KaeliUiStrings {
     'fr': KaeliUiStrings(
       done: 'OK',
       discardTitle: 'Abandonner les modifications ?',
-      discardMessage:
-          'Vous avez des modifications qui ne sont pas encore enregistrées.',
+      discardMessage: 'Vous avez des modifications qui ne sont pas encore enregistrées.',
       discard: 'Abandonner',
       keepEditing: 'Continuer',
       cancel: 'Annuler',
@@ -89,10 +88,7 @@ class KaeliUiStrings {
   };
 
   /// Textos completos para [languageCode] (inglés si no está), con lo de [overrides] encima.
-  static KaeliUiTexts resolve(
-    String? languageCode, [
-    KaeliUiStrings? overrides,
-  ]) {
+  static KaeliUiTexts resolve(String? languageCode, [KaeliUiStrings? overrides]) {
     final base = builtIn[languageCode] ?? builtIn['en']!;
     return KaeliUiTexts(
       done: overrides?.done ?? base.done!,
@@ -142,28 +138,19 @@ class KaeliUiTexts {
 
   /// Textos para [context]: idioma de `Localizations`, cambios de [KaeliKeyboard] y, encima, [overrides].
   static KaeliUiTexts of(BuildContext context, [KaeliUiStrings? overrides]) {
-    final scope = context
-        .dependOnInheritedWidgetOfExactType<KaeliUiStringsScope>();
+    final scope = context.dependOnInheritedWidgetOfExactType<KaeliUiStringsScope>();
     final merged = (scope?.strings ?? const KaeliUiStrings()).merge(overrides);
-    return KaeliUiStrings.resolve(
-      Localizations.maybeLocaleOf(context)?.languageCode,
-      merged,
-    );
+    return KaeliUiStrings.resolve(Localizations.maybeLocaleOf(context)?.languageCode, merged);
   }
 }
 
 /// Lleva los textos cambiados de [KaeliKeyboard] a todas las pantallas (lo pone [KaeliKeyboard]; no hace falta usarlo
 /// a mano).
 class KaeliUiStringsScope extends InheritedWidget {
-  const KaeliUiStringsScope({
-    super.key,
-    required this.strings,
-    required super.child,
-  });
+  const KaeliUiStringsScope({super.key, required this.strings, required super.child});
 
   final KaeliUiStrings? strings;
 
   @override
-  bool updateShouldNotify(KaeliUiStringsScope oldWidget) =>
-      strings != oldWidget.strings;
+  bool updateShouldNotify(KaeliUiStringsScope oldWidget) => strings != oldWidget.strings;
 }

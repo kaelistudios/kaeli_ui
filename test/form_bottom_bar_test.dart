@@ -12,11 +12,7 @@ Widget _form({bool scaffold = false}) {
     const TextField(key: Key('multi'), maxLines: null),
     const TextField(key: Key('single')),
   ];
-  final save = FilledButton(
-    key: const Key('save'),
-    onPressed: () {},
-    child: const Text('Guardar'),
-  );
+  final save = FilledButton(key: const Key('save'), onPressed: () {}, child: const Text('Guardar'));
   if (scaffold) {
     return KaeliFormScaffold(
       appBar: AppBar(title: const Text('Formulario')),
@@ -43,20 +39,14 @@ void main() {
   for (final scaffold in [false, true]) {
     final name = scaffold ? 'KaeliFormScaffold' : 'KaeliFormBottomBar';
 
-    testWidgets('$name: «Guardar» no sube con el teclado y el campo se ve', (
-      tester,
-    ) async {
+    testWidgets('$name: «Guardar» no sube con el teclado y el campo se ve', (tester) async {
       _setScreen(tester);
       await pumpKaeliApp(tester, _form(scaffold: scaffold));
       final before = tester.getRect(find.byKey(const Key('save')));
       await tester.showKeyboard(find.byKey(const Key('single')));
       tester.view.viewInsets = const FakeViewPadding(bottom: 340);
       await tester.pumpAndSettle();
-      expect(
-        tester.getRect(find.byKey(const Key('save'))),
-        before,
-        reason: 'se queda en su lugar',
-      );
+      expect(tester.getRect(find.byKey(const Key('save'))), before, reason: 'se queda en su lugar');
       expect(
         tester.getRect(find.byKey(const Key('single'))).bottom,
         lessThanOrEqualTo(800 - 340),
@@ -64,9 +54,7 @@ void main() {
       );
     });
 
-    testWidgets('$name: sin teclado respeta la zona segura de abajo', (
-      tester,
-    ) async {
+    testWidgets('$name: sin teclado respeta la zona segura de abajo', (tester) async {
       _setScreen(tester);
       await pumpKaeliApp(tester, _form(scaffold: scaffold));
       final save = tester.getRect(find.byKey(const Key('save')));
@@ -74,27 +62,17 @@ void main() {
     });
   }
 
-  testWidgets(
-    'en iPhone el campo queda también por encima de la barra «Listo»',
-    (tester) async {
-      await onPlatform(TargetPlatform.iOS, () async {
-        _setScreen(tester);
-        await pumpKaeliApp(tester, _form());
-        await tester.tap(find.byKey(const Key('multi')));
-        tester.view.viewInsets = const FakeViewPadding(bottom: 300);
-        await tester.pumpAndSettle();
-        final bar = tester.getRect(find.byKey(KaeliKeyboard.barKey));
-        expect(bar.bottom, 500);
-        expect(
-          tester.getRect(find.byKey(const Key('multi'))).bottom,
-          lessThanOrEqualTo(bar.top),
-        );
-        expect(
-          tester.getRect(find.byKey(const Key('save'))).top,
-          greaterThan(bar.bottom),
-          reason: 'el botón no sube',
-        );
-      });
-    },
-  );
+  testWidgets('en iPhone el campo queda también por encima de la barra «Listo»', (tester) async {
+    await onPlatform(TargetPlatform.iOS, () async {
+      _setScreen(tester);
+      await pumpKaeliApp(tester, _form());
+      await tester.tap(find.byKey(const Key('multi')));
+      tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+      await tester.pumpAndSettle();
+      final bar = tester.getRect(find.byKey(KaeliKeyboard.barKey));
+      expect(bar.bottom, 500);
+      expect(tester.getRect(find.byKey(const Key('multi'))).bottom, lessThanOrEqualTo(bar.top));
+      expect(tester.getRect(find.byKey(const Key('save'))).top, greaterThan(bar.bottom), reason: 'el botón no sube');
+    });
+  });
 }
