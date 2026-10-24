@@ -1,6 +1,6 @@
 name: kaeli_ui
-description: "Teclado, formularios y selectores para las apps Flutter de Kaeli."
-version: 0.6.0
+description: "Teclado, formularios, selectores, tutorial, compartir y calificar para las apps Flutter de Kaeli."
+version: 0.7.0
 publish_to: none
 
 environment:
@@ -12,6 +12,11 @@ dependencies:
     sdk: flutter
   # Nombres de los meses en cada idioma (KaeliMonthYearPicker), sin inicializar nada.
   intl: ">=0.19.0 <1.0.0"
+  # Tutorial de primera vez, compartir y calificar (0.7.0). Rangos amplios para que sirvan las versiones que ya
+  # usan Wibblo (share_plus 12) y AlojaConmigo (share_plus 13).
+  in_app_review: ^2.0.9
+  share_plus: ">=11.0.0 <14.0.0"
+  shared_preferences: ^2.2.0
 
 dev_dependencies:
   flutter_test:

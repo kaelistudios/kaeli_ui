@@ -1,5 +1,17 @@
 # Cambios
 
+## 0.7.0 (24 oct 2026)
+
+- Tutorial de primera vez: `showKaeliTourOnce` (una sola vez por teléfono, con la clave que ya usara la app),
+  `showKaeliTour` (Ajustes → «Ver el tutorial»), `KaeliTour`, `KaeliTourPage` (ícono o ilustración propia),
+  `KaeliTourStrings` («Saltar», «Siguiente», «Empezar» en es/en/fr/pt) y `KaeliTourMemory`.
+- Compartir y calificar: `KaeliAppInfo`, `kaeliShareApp` (hoja nativa junto al botón en iPad),
+  `kaeliOpenStoreToRate` (el botón abre la ficha de la tienda) y `KaeliReviewPrompt.milestone` (la ventana nativa
+  una sola vez, después de N logros; `countKey`/`askedKey` para seguir con las claves que ya tiene una app).
+- `KaeliPlatformActions` para sustituir el teléfono en las pruebas.
+- Dependencias nuevas: `shared_preferences`, `share_plus` (11 a 13) e `in_app_review`.
+- Sin cambios que rompan: las apps en 0.6.x siguen igual.
+
 ## 0.6.0 (24 oct 2026)
 
 - `KaeliForm` y `kaeliRecheckErrors` (Sesly #63): el error rojo se quita en cuanto el campo es válido, mientras se

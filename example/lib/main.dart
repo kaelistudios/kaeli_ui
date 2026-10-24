@@ -3,6 +3,7 @@
 // 2. KaeliKeyboardObserver en cada navegador (la raíz y una por pestaña).
 // 3. KaeliTabDismiss al cambiar de pestaña.
 // 4. KaeliUnsavedChangesGuard + KaeliFormBottomBar en el formulario.
+// Además (0.7.0): tutorial de primera vez y la pestaña «Ajustes» con «Ver el tutorial», «Compartir» y «Calificar».
 //
 // Los textos del ejemplo están fijos en español para que se lea fácil; en una app de Kaeli salen de sus traducciones.
 import 'package:flutter/material.dart';
@@ -12,10 +13,13 @@ import 'package:kaeli_ui/kaeli_ui.dart';
 void main() => runApp(const ExampleApp());
 
 class ExampleApp extends StatelessWidget {
-  const ExampleApp({super.key, this.locale});
+  const ExampleApp({super.key, this.locale, this.firstRunTour = true});
 
   /// Idioma fijo (para pruebas); si es null, el del teléfono.
   final Locale? locale;
+
+  /// Mostrar el tutorial la primera vez (las pruebas de formularios lo apagan).
+  final bool firstRunTour;
 
   @override
   Widget build(BuildContext context) => MaterialApp(
@@ -28,13 +32,15 @@ class ExampleApp extends StatelessWidget {
     builder: (context, child) => KaeliKeyboard(child: child!),
     // Paso 2 (navegador raíz).
     navigatorObservers: [KaeliKeyboardObserver()],
-    home: const HomeTabs(),
+    home: HomeTabs(firstRunTour: firstRunTour),
   );
 }
 
 /// Dos pestañas, cada una con su navegador (como `StatefulShellRoute.indexedStack` de go_router).
 class HomeTabs extends StatefulWidget {
-  const HomeTabs({super.key});
+  const HomeTabs({super.key, this.firstRunTour = true});
+
+  final bool firstRunTour;
 
   @override
   State<HomeTabs> createState() => _HomeTabsState();
@@ -44,7 +50,18 @@ class _HomeTabsState extends State<HomeTabs> {
   var _index = 0;
 
   // Paso 2 (una instancia por pestaña).
-  final _observers = [KaeliKeyboardObserver(), KaeliKeyboardObserver()];
+  final _observers = [KaeliKeyboardObserver(), KaeliKeyboardObserver(), KaeliKeyboardObserver()];
+
+  @override
+  void initState() {
+    super.initState();
+    // Tutorial de primera vez: una sola vez por teléfono, al llegar a la primera pantalla.
+    if (widget.firstRunTour) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) showKaeliTourOnce(context, pages: tourPages);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -59,6 +76,10 @@ class _HomeTabsState extends State<HomeTabs> {
           observers: [_observers[1]],
           onGenerateRoute: (_) => MaterialPageRoute<void>(builder: (_) => const NotesScreen()),
         ),
+        Navigator(
+          observers: [_observers[2]],
+          onGenerateRoute: (_) => MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
+        ),
       ],
     ),
     bottomNavigationBar: NavigationBar(
@@ -68,6 +89,7 @@ class _HomeTabsState extends State<HomeTabs> {
       destinations: const [
         NavigationDestination(key: Key('tab.properties'), icon: Icon(Icons.home_outlined), label: 'Propiedades'),
         NavigationDestination(key: Key('tab.notes'), icon: Icon(Icons.notes), label: 'Notas'),
+        NavigationDestination(key: Key('tab.settings'), icon: Icon(Icons.settings_outlined), label: 'Ajustes'),
       ],
     ),
   );
@@ -97,9 +119,8 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
   ];
 
   Future<void> _edit(int i) async {
-    final saved = await Navigator.of(context).push<Property>(
-      MaterialPageRoute(builder: (_) => PropertyFormScreen(initial: _items[i])),
-    );
+    final saved = await Navigator.of(context)
+        .push<Property>(MaterialPageRoute(builder: (_) => PropertyFormScreen(initial: _items[i])));
     if (saved != null) setState(() => _items[i] = saved);
   }
 
@@ -111,7 +132,10 @@ class _PropertyListScreenState extends State<PropertyListScreen> {
         // Buscar: campo de una línea; tocar fuera o deslizar la lista cierra el teclado.
         const Padding(
           padding: EdgeInsets.all(16),
-          child: TextField(key: Key('list.search'), decoration: InputDecoration(labelText: 'Buscar')),
+          child: TextField(
+            key: Key('list.search'),
+            decoration: InputDecoration(labelText: 'Buscar'),
+          ),
         ),
         for (final (i, p) in _items.indexed)
           ListTile(
@@ -174,7 +198,11 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> with KaeliDirty
       body: ListView(
         padding: const EdgeInsetsDirectional.all(16),
         children: [
-          TextField(key: const Key('form.name'), controller: _name, decoration: const InputDecoration(labelText: 'Nombre')),
+          TextField(
+            key: const Key('form.name'),
+            controller: _name,
+            decoration: const InputDecoration(labelText: 'Nombre'),
+          ),
           const SizedBox(height: 16),
           TextField(
             key: const Key('form.description'),
@@ -219,6 +247,75 @@ class NotesScreen extends StatelessWidget {
         maxLines: null,
         decoration: InputDecoration(labelText: 'Notas', border: OutlineInputBorder()),
       ),
+    ),
+  );
+}
+
+/// Páginas del tutorial (en una app salen de sus traducciones).
+const tourPages = [
+  KaeliTourPage(
+    icon: Icons.home_outlined,
+    title: 'Tus propiedades',
+    body: 'Agrega cada propiedad con su precio por noche y edítala cuando quieras.',
+  ),
+  KaeliTourPage(
+    icon: Icons.notes,
+    title: 'Notas a mano',
+    body: 'Apunta lo que no quieras olvidar en la pestaña «Notas».',
+  ),
+  KaeliTourPage(
+    icon: Icons.settings_outlined,
+    title: 'Todo en Ajustes',
+    body: 'Vuelve a ver este tutorial, comparte la app o califícala desde «Ajustes».',
+  ),
+];
+
+/// Datos de la app para compartir y calificar (en una app real: su Apple ID y `https://<app>.kaeliapps.com/`).
+const exampleApp = KaeliAppInfo(appStoreId: '6819557562', downloadUrl: 'https://wibblo.kaeliapps.com/');
+
+class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text('Ajustes')),
+    body: ListView(
+      children: [
+        ListTile(
+          key: const Key('settings.tour'),
+          leading: const Icon(Icons.school_outlined),
+          title: const Text('Ver el tutorial'),
+          onTap: () => showKaeliTour(context, pages: tourPages),
+        ),
+        Builder(
+          builder: (context) => ListTile(
+            key: const Key('settings.share'),
+            leading: const Icon(Icons.ios_share),
+            title: const Text('Compartir la app'),
+            onTap: () => kaeliShareApp(context, text: 'Te recomiendo esta app: ${exampleApp.downloadUrl}'),
+          ),
+        ),
+        ListTile(
+          key: const Key('settings.rate'),
+          leading: const Icon(Icons.star_outline),
+          title: const Text('Calificar la app'),
+          // El botón abre la ficha de la tienda; la ventana nativa solo después de un logro (KaeliReviewPrompt).
+          onTap: () => kaeliOpenStoreToRate(exampleApp),
+        ),
+        ListTile(
+          key: const Key('settings.resetTour'),
+          leading: const Icon(Icons.restart_alt),
+          title: const Text('Mostrar el tutorial al abrir otra vez'),
+          subtitle: const Text('Solo para probar'),
+          onTap: () async {
+            await KaeliTourMemory.reset();
+            if (context.mounted) {
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(const SnackBar(content: Text('Listo: saldrá al abrir la app.')));
+            }
+          },
+        ),
+      ],
     ),
   );
 }

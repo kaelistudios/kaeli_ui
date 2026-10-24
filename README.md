@@ -19,6 +19,7 @@ En una prueba en iPhone (18 oct 2026) encontramos estos problemas con el teclado
 | Cambiar de mes en un calendario pedía tocar la flecha muchas veces. | `showKaeliMonthYearPicker`: hoja con ruedas de mes y año (✕ y ✓), igual en iPhone y Android. **0.4.0:** `showKaeliDatePicker`, el calendario completo que las usa. |
 | Botones sueltos y desordenados para elegir una opción. | **0.4.0:** `KaeliChoice`: 2–3 opciones cortas → control segmentado de ancho completo; 4 o más o textos largos → lista vertical con ícono y círculo. **0.5.0:** tarjetas con ícono (`cards`, `KaeliMultiChoice`) y «Otra» al final (`KaeliChoiceOther`). |
 | Salir de un formulario perdía los cambios sin avisar. | `KaeliUnsavedChangesGuard` pregunta «¿Descartar cambios?» (Descartar / Seguir editando). |
+| Cada app tenía su propio tutorial de primera vez, su «Compartir» y su «Calificar». | **0.7.0:** `showKaeliTourOnce` / `showKaeliTour` (tutorial con «Saltar»), `kaeliShareApp`, `kaeliOpenStoreToRate` y `KaeliReviewPrompt.milestone`. |
 | «Este dato es obligatorio» sin decir cuál (el campo quedaba fuera de la pantalla, y con `ListView` los campos de abajo ni se validaban). | **0.3.0:** `KaeliFormList` (todos los campos existen), `kaeliValidateForm` (va al primer error, lo enfoca y lo lee) y `KaeliRequiredLabel` (asterisco desde el principio). |
 
 ## Instalación
@@ -30,7 +31,7 @@ dependencies:
   kaeli_ui:
     git:
       url: https://github.com/kaelistudios/kaeli_ui.git
-      ref: v0.6.0
+      ref: v0.7.0
 ```
 
 Después: `flutter pub get` e `import 'package:kaeli_ui/kaeli_ui.dart';`.
@@ -241,6 +242,61 @@ if (month != null) setState(() => visibleMonth = month); // primer día del mes 
 - Colores y letras del tema (`ColorScheme`, `TextTheme`); la rueda crece con la letra del teléfono.
 - `KaeliMonthYearPicker` es el contenido, por si se quiere poner en otro lugar.
 
+### Tutorial de primera vez, compartir y calificar (0.7.0)
+
+**Tutorial.** Sale una sola vez por teléfono, al llegar a la primera pantalla, con «Saltar», «Siguiente» y
+«Empezar» (en es/en/fr/pt). En Ajustes, «Ver el tutorial» lo vuelve a abrir. Los textos de cada página los pone la
+app; los colores salen del tema.
+
+```dart
+List<KaeliTourPage> tourPages(AppLocalizations l10n) => [
+  KaeliTourPage(icon: Icons.edit_note, title: l10n.tour1Title, body: l10n.tour1Body),
+  KaeliTourPage(visual: Image.asset('assets/tour2.png', height: 160), title: l10n.tour2Title, body: l10n.tour2Body),
+];
+
+// Primera pantalla (initState o al terminar de cargar):
+await showKaeliTourOnce(context, pages: tourPages(l10n));
+
+// Ajustes → «Ver el tutorial»:
+onTap: () => showKaeliTour(context, pages: tourPages(l10n)),
+```
+
+- Queda marcado como visto **al abrirse** (aunque se cierre la app a la mitad, no vuelve a salir solo).
+- Clave en `SharedPreferences`: `kaeli.tour.seen`. Una app que ya tenía su tutorial pasa **su clave vieja** para que
+  a nadie le vuelva a salir: `showKaeliTourOnce(context, pages: …, key: 'settings.onboardingSeen')`.
+- `strings: KaeliTourStrings(start: l10n.letsGo)` cambia solo los botones que se pasen.
+- `pageBuilder:` reemplaza el diseño de cada página; `KaeliTour` es la pantalla, por si la app la pone en su router.
+- Pruebas: `KaeliTour.skipKey` y `KaeliTour.nextKey`; `KaeliTourMemory.reset()` para volver a verlo.
+
+**Compartir y calificar.** Toda app tiene «Compartir» y «Calificar» en Ajustes.
+
+```dart
+const kaeliApp = KaeliAppInfo(appStoreId: '6819557562', downloadUrl: 'https://wibblo.kaeliapps.com/');
+
+// «Compartir Wibblo»: el texto lo traduce la app e incluye el enlace.
+onTap: () => kaeliShareApp(context, text: l10n.shareAppText(kaeliApp.downloadUrl)),
+
+// «Calificar Wibblo»: abre la ficha de la tienda (App Store en iPhone, Google Play en Android).
+onTap: () => kaeliOpenStoreToRate(kaeliApp),
+
+// Después de un logro (3.ª ficha exportada, 1.ª reserva confirmada…): la ventana nativa, UNA vez.
+await KaeliReviewPrompt.milestone(after: 3);
+```
+
+**Reglas:**
+- El botón **«Calificar» abre la ficha de la tienda**. La **ventana nativa** de calificación **solo después de un
+  logro** de la persona (`KaeliReviewPrompt.milestone`), una sola vez por teléfono: queda marcada aunque la tienda no
+  la muestre, y nunca se insiste. Apple y Google piden no abrir la ventana nativa desde un botón (puede no salir
+  nunca y el botón parecería roto).
+- El **enlace para compartir** es la página de la app: `https://<app>.kaeliapps.com/` (manda a cada tienda).
+- Pasa el `context` del botón a `kaeliShareApp`: en iPad la hoja sale junto a él.
+- Claves de la ventana nativa: `kaeli.review.count` y `kaeli.review.asked`. Una app que ya las guardaba con otros
+  nombres los pasa: `milestone(after: 3, countKey: 'review.exportCount', askedKey: 'review.asked')`.
+- **En pruebas**, `KaeliPlatformActions.instance = MiTelefonoFalso();` (una clase que extiende
+  `KaeliPlatformActions`) anota lo que se compartió, la ficha abierta y las ventanas pedidas, y
+  `SharedPreferences.setMockInitialValues({})` empieza sin nada guardado. Ver `test/tour_test.dart` y
+  `test/app_extras_test.dart`.
+
 ## Textos e idiomas
 
 Los textos incluidos (barra «Listo», aviso de cambios y ✕/✓ del selector de mes y año) están en español, inglés, francés y portugués; se elige el
@@ -298,7 +354,8 @@ cambiar de pestaña con el teclado abierto, «Guardar» visible mientras se escr
 ## Ejemplo
 
 `example/` tiene una app con una lista → formulario (varias líneas, número y teléfono), «Guardar» abajo, aviso de
-cambios y dos pestañas:
+cambios, el tutorial de primera vez y una pestaña «Ajustes» con «Ver el tutorial», «Compartir», «Calificar» y
+«Mostrar el tutorial al abrir otra vez» (para probarlo de nuevo):
 
 ```sh
 cd example

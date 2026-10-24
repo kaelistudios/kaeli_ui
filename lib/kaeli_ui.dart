@@ -1,8 +1,9 @@
-/// Teclado, formularios y selectores compartidos por las apps Flutter de Kaeli.
+/// Teclado, formularios, selectores, tutorial, compartir y calificar, compartidos por las apps Flutter de Kaeli.
 ///
 /// Ver README.md para la lista de integración en 4 pasos.
 library;
 
+export 'src/app_extras.dart';
 export 'src/choice.dart';
 export 'src/date_picker.dart';
 export 'src/dirty_tracker.dart';
@@ -16,4 +17,5 @@ export 'src/page.dart';
 export 'src/strings.dart';
 export 'src/tab_dismiss.dart';
 export 'src/time_picker.dart';
+export 'src/tour.dart';
 export 'src/unsaved_changes_guard.dart';
