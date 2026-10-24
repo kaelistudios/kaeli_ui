@@ -18,6 +18,7 @@ En una prueba en iPhone (18 oct 2026) encontramos estos problemas con el teclado
 | El botón «Guardar» saltaba con el teclado y tapaba el formulario. | **Regla (0.2.0):** `KaeliFormBottomBar` se queda en su lugar; el contenido se achica hasta el teclado (y la barra «Listo») y se desplaza solo para que el campo que se escribe se vea. Para guardar, se cierra el teclado. |
 | Cambiar de mes en un calendario pedía tocar la flecha muchas veces. | `showKaeliMonthYearPicker`: hoja con ruedas de mes y año (✕ y ✓), igual en iPhone y Android. |
 | Salir de un formulario perdía los cambios sin avisar. | `KaeliUnsavedChangesGuard` pregunta «¿Descartar cambios?» (Descartar / Seguir editando). |
+| «Este dato es obligatorio» sin decir cuál (el campo quedaba fuera de la pantalla, y con `ListView` los campos de abajo ni se validaban). | **0.3.0:** `KaeliFormList` (todos los campos existen), `kaeliValidateForm` (va al primer error, lo enfoca y lo lee) y `KaeliRequiredLabel` (asterisco desde el principio). |
 
 ## Instalación
 
@@ -28,7 +29,7 @@ dependencies:
   kaeli_ui:
     git:
       url: https://github.com/kaelistudios/kaeli_ui.git
-      ref: v0.2.0
+      ref: v0.3.0
 ```
 
 Después: `flutter pub get` e `import 'package:kaeli_ui/kaeli_ui.dart';`.
@@ -137,6 +138,33 @@ class _EditState extends State<Edit> with KaeliDirtyTracker<Edit> {
   teclado**. El `Scaffold` (con `resizeToAvoidBottomInset`, que viene encendido) achica el contenido y Flutter desplaza
   el campo activo para que no quede tapado; el cuerpo tiene que poder desplazarse (`ListView`,
   `SingleChildScrollView`…). No pongas el botón dentro de un `Padding` con `MediaQuery.viewInsets`.
+
+### Errores de un formulario: `KaeliFormList`, `kaeliValidateForm` y `KaeliRequiredLabel` (0.3.0)
+
+```dart
+Form(
+  key: _form,
+  child: KaeliFormList(              // no ListView: así se validan también los campos de abajo
+    padding: EdgeInsets.all(16),
+    children: [
+      TextFormField(
+        decoration: InputDecoration(label: KaeliRequiredLabel(l10n.name)),   // «Nombre *»
+        validator: (v) => (v ?? '').trim().isEmpty ? l10n.required : null,
+      ),
+      // ...
+    ],
+  ),
+)
+
+void _save() {
+  if (!kaeliValidateForm(_form)) return;   // desplaza al primer error, lo enfoca y el lector lo dice
+  // ... guardar ...
+}
+```
+
+- Regla de Kaeli: el error va **debajo del campo** con su texto, y al guardar la pantalla va al primero.
+- `kaeliRevealFirstError(context)` hace lo mismo con errores que la app marca a mano.
+- Con `ListView`, `Form.validate()` solo revisa los campos ya construidos (los que se ven): usar `KaeliFormList`.
 
 ### Volver deslizando en iPhone (go_router)
 

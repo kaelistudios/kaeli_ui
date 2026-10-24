@@ -5,6 +5,7 @@ library;
 
 export 'src/dirty_tracker.dart';
 export 'src/form_bottom_bar.dart';
+export 'src/form_errors.dart';
 export 'src/keyboard.dart';
 export 'src/keyboard_observer.dart';
 export 'src/month_year_picker.dart';

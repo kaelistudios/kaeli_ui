@@ -24,6 +24,7 @@ class KaeliUiStrings {
     this.keepEditing,
     this.cancel,
     this.confirm,
+    this.required,
   });
 
   /// Botón de la barra sobre el teclado de iPhone («Listo»).
@@ -47,6 +48,9 @@ class KaeliUiStrings {
   /// ✓ del selector de mes y año («Aceptar»).
   final String? confirm;
 
+  /// Lo que lee el lector de pantalla después de un campo con asterisco («obligatorio»).
+  final String? required;
+
   /// Textos incluidos, por código de idioma.
   static const Map<String, KaeliUiStrings> builtIn = {
     'es': KaeliUiStrings(
@@ -57,6 +61,7 @@ class KaeliUiStrings {
       keepEditing: 'Seguir editando',
       cancel: 'Cancelar',
       confirm: 'Aceptar',
+      required: 'obligatorio',
     ),
     'en': KaeliUiStrings(
       done: 'Done',
@@ -66,6 +71,7 @@ class KaeliUiStrings {
       keepEditing: 'Keep editing',
       cancel: 'Cancel',
       confirm: 'OK',
+      required: 'required',
     ),
     'fr': KaeliUiStrings(
       done: 'OK',
@@ -75,6 +81,7 @@ class KaeliUiStrings {
       keepEditing: 'Continuer',
       cancel: 'Annuler',
       confirm: 'Valider',
+      required: 'obligatoire',
     ),
     'pt': KaeliUiStrings(
       done: 'OK',
@@ -84,6 +91,7 @@ class KaeliUiStrings {
       keepEditing: 'Continuar editando',
       cancel: 'Cancelar',
       confirm: 'Confirmar',
+      required: 'obrigatório',
     ),
   };
 
@@ -98,6 +106,7 @@ class KaeliUiStrings {
       keepEditing: overrides?.keepEditing ?? base.keepEditing!,
       cancel: overrides?.cancel ?? base.cancel!,
       confirm: overrides?.confirm ?? base.confirm!,
+      required: overrides?.required ?? base.required!,
     );
   }
 
@@ -112,6 +121,7 @@ class KaeliUiStrings {
           keepEditing: other.keepEditing ?? keepEditing,
           cancel: other.cancel ?? cancel,
           confirm: other.confirm ?? confirm,
+          required: other.required ?? required,
         );
 }
 
@@ -126,6 +136,7 @@ class KaeliUiTexts {
     required this.keepEditing,
     required this.cancel,
     required this.confirm,
+    required this.required,
   });
 
   final String done;
@@ -135,6 +146,7 @@ class KaeliUiTexts {
   final String keepEditing;
   final String cancel;
   final String confirm;
+  final String required;
 
   /// Textos para [context]: idioma de `Localizations`, cambios de [KaeliKeyboard] y, encima, [overrides].
   static KaeliUiTexts of(BuildContext context, [KaeliUiStrings? overrides]) {
