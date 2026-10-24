@@ -114,7 +114,7 @@ class PropertyListScreen extends StatefulWidget {
 
 class _PropertyListScreenState extends State<PropertyListScreen> {
   final _items = [
-    const Property(name: 'Casa Colibrí', description: 'Frente al mar.', priceCents: 85000, phone: '+506 8888 0000'),
+    const Property(name: 'Casa Colibrí', description: 'Frente al mar.', priceCents: 85000, phone: '+50688880000'),
     const Property(name: 'Cabaña del Bosque', description: '', priceCents: 60000, phone: ''),
   ];
 
@@ -164,26 +164,30 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> with KaeliDirty
   late final _name = TextEditingController(text: widget.initial.name);
   late final _description = TextEditingController(text: widget.initial.description);
   late final _price = TextEditingController(text: (widget.initial.priceCents ~/ 100).toString());
-  late final _phone = TextEditingController(text: widget.initial.phone);
+  // Teléfono en formato E.164 («+50688880000»), como lo entrega KaeliPhoneField (null si está vacío o no es válido).
+  late final _phone = ValueNotifier<String?>(widget.initial.phone.isEmpty ? null : widget.initial.phone);
   late final _changes = Listenable.merge([_name, _description, _price, _phone]);
+  final _form = GlobalKey<FormState>();
 
   @override
-  Object? dirtySnapshot() => (_name.text, _description.text, _price.text, _phone.text);
+  Object? dirtySnapshot() => (_name.text, _description.text, _price.text, _phone.value);
 
   @override
   void dispose() {
-    for (final c in [_name, _description, _price, _phone]) {
+    for (final c in [_name, _description, _price]) {
       c.dispose();
     }
+    _phone.dispose();
     super.dispose();
   }
 
   void _save() {
+    if (!kaeliValidateForm(_form)) return;
     final saved = Property(
       name: _name.text,
       description: _description.text,
       priceCents: (int.tryParse(_price.text) ?? 0) * 100,
-      phone: _phone.text,
+      phone: _phone.value ?? '',
     );
     setState(markSaved);
     kaeliPopAfterSave(context, saved);
@@ -195,37 +199,43 @@ class _PropertyFormScreenState extends State<PropertyFormScreen> with KaeliDirty
     listenable: _changes,
     child: Scaffold(
       appBar: AppBar(title: const Text('Editar propiedad')),
-      body: ListView(
-        padding: const EdgeInsetsDirectional.all(16),
-        children: [
-          TextField(
-            key: const Key('form.name'),
-            controller: _name,
-            decoration: const InputDecoration(labelText: 'Nombre'),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            key: const Key('form.description'),
-            controller: _description,
-            maxLines: null,
-            minLines: 3,
-            decoration: const InputDecoration(labelText: 'Descripción'),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            key: const Key('form.price'),
-            controller: _price,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(labelText: 'Precio por noche'),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            key: const Key('form.phone'),
-            controller: _phone,
-            keyboardType: TextInputType.phone,
-            decoration: const InputDecoration(labelText: 'Teléfono'),
-          ),
-        ],
+      body: KaeliForm(
+        formKey: _form,
+        child: ListView(
+          padding: const EdgeInsetsDirectional.all(16),
+          children: [
+            TextField(
+              key: const Key('form.name'),
+              controller: _name,
+              decoration: const InputDecoration(labelText: 'Nombre'),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              key: const Key('form.description'),
+              controller: _description,
+              maxLines: null,
+              minLines: 3,
+              decoration: const InputDecoration(labelText: 'Descripción'),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              key: const Key('form.price'),
+              controller: _price,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: 'Precio por noche'),
+            ),
+            const SizedBox(height: 16),
+            // Teléfono con código de país (0.8.0): bandera y código a la izquierda, el número a la derecha.
+            KaeliPhoneField(
+              key: const Key('form.phone'),
+              initialValue: widget.initial.phone,
+              defaultCountry: 'CR',
+              pinnedCountries: const ['CR', 'MX', 'US', 'ES'],
+              decoration: const InputDecoration(labelText: 'Teléfono'),
+              onChanged: (v) => _phone.value = v,
+            ),
+          ],
+        ),
       ),
       bottomNavigationBar: KaeliFormBottomBar(
         child: FilledButton(key: const Key('form.save'), onPressed: _save, child: const Text('Guardar')),

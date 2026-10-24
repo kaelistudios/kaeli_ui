@@ -41,6 +41,18 @@ void main() {
     expect(find.text('900.00 por noche'), findsOneWidget);
   });
 
+  testWidgets('teléfono con código de país: carga el guardado y no deja guardar uno inválido', (tester) async {
+    await tester.pumpWidget(const ExampleApp(locale: Locale('es'), firstRunTour: false));
+    await tester.tap(find.byKey(const Key('list.item0')));
+    await tester.pumpAndSettle();
+    expect(find.text('+506'), findsOneWidget);
+    expect(find.text('8888 0000'), findsOneWidget);
+    await tester.enterText(find.byKey(KaeliPhoneField.numberKey), '888');
+    await tester.tap(find.byKey(const Key('form.save')));
+    await tester.pumpAndSettle();
+    expect(find.text('Número no válido'), findsOneWidget);
+  });
+
   testWidgets('cambiar de pestaña con el teclado abierto lo cierra', (tester) async {
     await tester.pumpWidget(const ExampleApp(locale: Locale('es'), firstRunTour: false));
     await tester.showKeyboard(find.byKey(const Key('list.search')));

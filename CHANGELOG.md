@@ -1,5 +1,18 @@
 # Cambios
 
+## 0.8.0 (24 oct 2026)
+
+- `KaeliPhoneField`: teléfono con código de país para todas las apps. Bandera y código a la izquierda (abre una hoja con
+  buscador por nombre o por código y países fijos arriba), número a la derecha con teclado de teléfono. Recibe y
+  entrega E.164 (`+50660895761`); país inicial del número guardado, de la región del teléfono o `defaultCountry`;
+  pegar un número con `+` cambia el país; validación de largo por país, compatible con `KaeliForm`,
+  `kaeliValidateForm` y `KaeliRequiredLabel`; anuncia «País: Costa Rica, +506».
+- `KaeliPhoneStrings` (es/en/fr/pt) y funciones `kaeliToE164`, `kaeliSplitPhone`, `kaeliCountryFromPhone`,
+  `kaeliFormatNational`, `kaeliSearchPhoneCountries`.
+- `kaeliPhoneCountries`: 225 países con código, largo del número y nombre en 4 idiomas, sin paquetes nuevos
+  (generada por `tool/gen_phone_countries.mjs`, con las reglas de AlojaConmigo).
+- Sin cambios que rompan: las apps en 0.7.x siguen igual.
+
 ## 0.7.0 (24 oct 2026)
 
 - Tutorial de primera vez: `showKaeliTourOnce` (una sola vez por teléfono, con la clave que ya usara la app),

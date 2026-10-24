@@ -1,4 +1,4 @@
-/// Teclado, formularios, selectores, tutorial, compartir y calificar, compartidos por las apps Flutter de Kaeli.
+/// Teclado, formularios, teléfono con código de país, selectores, tutorial, compartir y calificar, compartidos por las apps Flutter de Kaeli.
 ///
 /// Ver README.md para la lista de integración en 4 pasos.
 library;
@@ -14,6 +14,8 @@ export 'src/keyboard_observer.dart';
 export 'src/month_year_picker.dart';
 export 'src/notice.dart';
 export 'src/page.dart';
+export 'src/phone.dart';
+export 'src/phone_field.dart';
 export 'src/strings.dart';
 export 'src/tab_dismiss.dart';
 export 'src/time_picker.dart';

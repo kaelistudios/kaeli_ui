@@ -20,6 +20,7 @@ En una prueba en iPhone (18 oct 2026) encontramos estos problemas con el teclado
 | Botones sueltos y desordenados para elegir una opción. | **0.4.0:** `KaeliChoice`: 2–3 opciones cortas → control segmentado de ancho completo; 4 o más o textos largos → lista vertical con ícono y círculo. **0.5.0:** tarjetas con ícono (`cards`, `KaeliMultiChoice`) y «Otra» al final (`KaeliChoiceOther`). |
 | Salir de un formulario perdía los cambios sin avisar. | `KaeliUnsavedChangesGuard` pregunta «¿Descartar cambios?» (Descartar / Seguir editando). |
 | Cada app tenía su propio tutorial de primera vez, su «Compartir» y su «Calificar». | **0.7.0:** `showKaeliTourOnce` / `showKaeliTour` (tutorial con «Saltar»), `kaeliShareApp`, `kaeliOpenStoreToRate` y `KaeliReviewPrompt.milestone`. |
+| Cada app escribía el teléfono a su manera (con o sin código de país, guardado en formatos distintos). | **0.8.0:** `KaeliPhoneField`: bandera y código a la izquierda, número a la derecha; siempre E.164. |
 | «Este dato es obligatorio» sin decir cuál (el campo quedaba fuera de la pantalla, y con `ListView` los campos de abajo ni se validaban). | **0.3.0:** `KaeliFormList` (todos los campos existen), `kaeliValidateForm` (va al primer error, lo enfoca y lo lee) y `KaeliRequiredLabel` (asterisco desde el principio). |
 
 ## Instalación
@@ -31,7 +32,7 @@ dependencies:
   kaeli_ui:
     git:
       url: https://github.com/kaelistudios/kaeli_ui.git
-      ref: v0.7.0
+      ref: v0.8.0
 ```
 
 Después: `flutter pub get` e `import 'package:kaeli_ui/kaeli_ui.dart';`.
@@ -242,6 +243,44 @@ if (month != null) setState(() => visibleMonth = month); // primer día del mes 
 - Colores y letras del tema (`ColorScheme`, `TextTheme`); la rueda crece con la letra del teléfono.
 - `KaeliMonthYearPicker` es el contenido, por si se quiere poner en otro lugar.
 
+### Teléfono con código de país: `KaeliPhoneField` (0.8.0)
+
+**Regla:** todo teléfono de una app de Kaeli usa `KaeliPhoneField` y se **guarda en formato internacional E.164**
+(`+50660895761`): sin espacios, con `+` y el código del país. Así sirve para llamar, para WhatsApp (`wa.me`) y para
+reconocer a la misma persona aunque se haya escrito distinto.
+
+```dart
+KaeliPhoneField(
+  initialValue: client.phone,                     // «+50660895761» o null
+  defaultCountry: 'CR',                           // si no se sabe la región del teléfono
+  pinnedCountries: const ['CR', 'MX', 'US', 'ES'], // arriba de la lista, en ese orden
+  isRequired: true,
+  decoration: InputDecoration(label: KaeliRequiredLabel(l10n.phone)),
+  onChanged: (e164) => _phone = e164,              // null si está vacío o todavía no es válido
+  onSaved: (e164) => client = client.copyWith(phone: e164),
+)
+```
+
+- **Dos campos lado a lado:** a la izquierda la bandera y el código (🇨🇷 +506 ▾); a la derecha solo el número, con
+  teclado de teléfono. Mismo borde, relleno y altura que el resto de los campos (salen del tema y de `decoration`).
+  Pon siempre una etiqueta en `decoration`: el selector lleva la suya («País») y así quedan a la misma altura.
+- **País al empezar:** el del número guardado; si no hay, el de la región del teléfono (`PlatformDispatcher`, o la
+  del idioma de la app como `es_CR`); si no se sabe, `defaultCountry`.
+- **Hoja de países:** buscador por nombre (en el idioma de la app, sin importar acentos, también en inglés), por
+  código ISO (`CR`) o por código telefónico (`+506`, `506`). `pinnedCountries` fija los más usados arriba.
+- **Pegar un número completo** con `+` (o `00`) en el número cambia el país solo y deja el número nacional.
+- **Validación** con el largo mínimo y máximo de cada país (y el 0 de larga distancia donde se usa, como Francia o
+  Argentina). Funciona en `Form`, `KaeliForm` (el error se quita al corregir) y `kaeliValidateForm` (va al número y lo
+  enfoca). `validator:` agrega una regla propia.
+- **Textos** («País», buscar, sin resultados, número no válido, obligatorio) en es/en/fr/pt; `strings:
+  KaeliPhoneStrings(…)` cambia los que se pasen. Los nombres de los países salen de Unicode CLDR en los 4 idiomas.
+- **Accesible:** el selector se anuncia «País: Costa Rica, +506».
+- **Sin paquetes de teléfonos:** la lista propia (`kaeliPhoneCountries`, 225 países, con las reglas de AlojaConmigo)
+  se genera con `node tool/gen_phone_countries.mjs`. Funciones sueltas para el servidor o la app:
+  `kaeliToE164`, `kaeliSplitPhone`, `kaeliCountryFromPhone`, `kaeliFormatNational`, `kaeliSearchPhoneCountries`.
+- **Pruebas:** `KaeliPhoneField.countryKey`, `numberKey`, `searchKey` y `countryTileKey('CR')`. Para fijar la región:
+  `tester.platformDispatcher.localesTestValue = const [Locale('es', 'MX')]`. Ver `test/phone_field_test.dart`.
+
 ### Tutorial de primera vez, compartir y calificar (0.7.0)
 
 **Tutorial.** Sale una sola vez por teléfono, al llegar a la primera pantalla, con «Saltar», «Siguiente» y
@@ -354,7 +393,7 @@ cambiar de pestaña con el teclado abierto, «Guardar» visible mientras se escr
 ## Ejemplo
 
 `example/` tiene una app con una lista → formulario (varias líneas, número y teléfono), «Guardar» abajo, aviso de
-cambios, el tutorial de primera vez y una pestaña «Ajustes» con «Ver el tutorial», «Compartir», «Calificar» y
+cambios, el teléfono con código de país (`KaeliPhoneField`), el tutorial de primera vez y una pestaña «Ajustes» con «Ver el tutorial», «Compartir», «Calificar» y
 «Mostrar el tutorial al abrir otra vez» (para probarlo de nuevo):
 
 ```sh
