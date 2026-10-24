@@ -3,6 +3,8 @@
 /// Ver README.md para la lista de integración en 4 pasos.
 library;
 
+export 'src/choice.dart';
+export 'src/date_picker.dart';
 export 'src/dirty_tracker.dart';
 export 'src/form_bottom_bar.dart';
 export 'src/form_errors.dart';

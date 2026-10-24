@@ -1,5 +1,14 @@
 # Cambios
 
+## 0.4.0 (23 oct 2026)
+
+- `KaeliChoice` / `KaeliOption` (pedido en Sesly #35): una sola forma de elegir una opción. 2–3 opciones cortas →
+  control segmentado de ancho completo; 4 o más, textos largos, segunda línea o letra muy grande → lista vertical con
+  ícono y círculo.
+- `showKaeliDatePicker` / `KaeliDatePickerDialog` (Sesly #22): calendario con las ruedas de mes y año, `openAt` para
+  abrir en otra fecha sin marcar, límites `first`/`last`, «Cancelar» y «Aceptar» con el mismo formato.
+- Pruebas de los dos.
+
 ## 0.3.0 (23 oct 2026)
 
 - **Errores de formulario (pedido en Sesly #37):** `kaeliValidateForm(formKey)` valida y, si algo falla, desplaza al

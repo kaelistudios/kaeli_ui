@@ -16,7 +16,8 @@ En una prueba en iPhone (18 oct 2026) encontramos estos problemas con el teclado
 | Al volver a la pantalla anterior (flecha o gesto de deslizar), el teclado quedaba abierto. | `KaeliKeyboardObserver` lo cierra en cada cambio de pantalla y apenas empieza el gesto de volver. |
 | Al cambiar de pestaña, el teclado seguía abierto (la pestaña de antes sigue montada). | `KaeliTabDismiss` lo cierra al cambiar de pestaña. |
 | El botón «Guardar» saltaba con el teclado y tapaba el formulario. | **Regla (0.2.0):** `KaeliFormBottomBar` se queda en su lugar; el contenido se achica hasta el teclado (y la barra «Listo») y se desplaza solo para que el campo que se escribe se vea. Para guardar, se cierra el teclado. |
-| Cambiar de mes en un calendario pedía tocar la flecha muchas veces. | `showKaeliMonthYearPicker`: hoja con ruedas de mes y año (✕ y ✓), igual en iPhone y Android. |
+| Cambiar de mes en un calendario pedía tocar la flecha muchas veces. | `showKaeliMonthYearPicker`: hoja con ruedas de mes y año (✕ y ✓), igual en iPhone y Android. **0.4.0:** `showKaeliDatePicker`, el calendario completo que las usa. |
+| Botones sueltos y desordenados para elegir una opción. | **0.4.0:** `KaeliChoice`: 2–3 opciones cortas → control segmentado de ancho completo; 4 o más o textos largos → lista vertical con ícono y círculo. |
 | Salir de un formulario perdía los cambios sin avisar. | `KaeliUnsavedChangesGuard` pregunta «¿Descartar cambios?» (Descartar / Seguir editando). |
 | «Este dato es obligatorio» sin decir cuál (el campo quedaba fuera de la pantalla, y con `ListView` los campos de abajo ni se validaban). | **0.3.0:** `KaeliFormList` (todos los campos existen), `kaeliValidateForm` (va al primer error, lo enfoca y lo lee) y `KaeliRequiredLabel` (asterisco desde el principio). |
 
@@ -29,7 +30,7 @@ dependencies:
   kaeli_ui:
     git:
       url: https://github.com/kaelistudios/kaeli_ui.git
-      ref: v0.3.0
+      ref: v0.4.0
 ```
 
 Después: `flutter pub get` e `import 'package:kaeli_ui/kaeli_ui.dart';`.
@@ -138,6 +139,36 @@ class _EditState extends State<Edit> with KaeliDirtyTracker<Edit> {
   teclado**. El `Scaffold` (con `resizeToAvoidBottomInset`, que viene encendido) achica el contenido y Flutter desplaza
   el campo activo para que no quede tapado; el cuerpo tiene que poder desplazarse (`ListView`,
   `SingleChildScrollView`…). No pongas el botón dentro de un `Padding` con `MediaQuery.viewInsets`.
+
+### Elegir una opción: `KaeliChoice` (0.4.0)
+
+```dart
+KaeliChoice<Status>(
+  label: l10n.status,
+  value: _status,
+  options: [for (final s in Status.values) KaeliOption(s, label(s), icon: icon(s))],
+  onChanged: (s) => setState(() => _status = s),
+)
+```
+
+Regla de Kaeli: 2 o 3 opciones cortas (hasta 14 letras, sin segunda línea y con letra hasta 150 %) → control
+segmentado de ancho completo; si no, lista vertical con ícono y círculo de selección. `KaeliChoice.segmented(...)` dice
+cuál toca.
+
+### Elegir un día: `showKaeliDatePicker` (0.4.0)
+
+```dart
+final d = await showKaeliDatePicker(
+  context,
+  initial: _birth,                                  // null: se abre en openAt sin marcar
+  openAt: DateTime(now.year - 6, now.month),        // p. ej. fecha de nacimiento: unos años atrás
+  first: DateTime(1920),
+  last: now,                                        // sin fechas futuras
+);
+```
+
+Calendario del mes con ‹ ›; al tocar «octubre 2026 ▾» se abren las ruedas de mes y año. «Cancelar» y «Aceptar» con el
+mismo formato, en el idioma de la app.
 
 ### Errores de un formulario: `KaeliFormList`, `kaeliValidateForm` y `KaeliRequiredLabel` (0.3.0)
 
