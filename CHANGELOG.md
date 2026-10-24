@@ -6,6 +6,8 @@
   escribe; los campos que estaban bien no se revisan antes de guardar.
 - `showKaeliNotice` / `showKaeliNoticeOn` / `KaeliNoticeAction` (Sesly #70): aviso compacto de una línea con ícono y
   una acción con ícono a la derecha, encima del botón flotante, que se cierra deslizando.
+- `showKaeliTimePicker` / `KaeliTimePicker` (Sesly #61): elegir la hora con ruedas (hora, minutos y a. m./p. m. según
+  el idioma), en una hoja inferior con «Listo».
 
 ## 0.5.0 (24 oct 2026)
 

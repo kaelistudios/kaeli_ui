@@ -15,4 +15,5 @@ export 'src/notice.dart';
 export 'src/page.dart';
 export 'src/strings.dart';
 export 'src/tab_dismiss.dart';
+export 'src/time_picker.dart';
 export 'src/unsaved_changes_guard.dart';
