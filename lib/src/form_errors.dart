@@ -21,6 +21,55 @@ bool kaeliValidateForm(GlobalKey<FormState> form) {
   return false;
 }
 
+/// Vuelve a validar solo los campos que hoy muestran un error (Sesly #63): en cuanto la persona lo corrige, el mensaje
+/// rojo desaparece mientras escribe. Los campos sin error no se tocan (no se llenan de rojo antes de guardar).
+void kaeliRecheckErrors(BuildContext context) {
+  void visit(Element e) {
+    if (e is StatefulElement && e.state is FormFieldState && (e.state as FormFieldState).hasError) {
+      (e.state as FormFieldState).validate();
+    }
+    e.visitChildren(visit);
+  }
+
+  (context as Element).visitChildren(visit);
+}
+
+/// Un `Form` de Kaeli: igual que `Form`, pero al cambiar cualquier campo vuelve a revisar los que tienen error
+/// ([kaeliRecheckErrors]); así el error se quita en cuanto el campo es válido. Usar con [kaeliValidateForm].
+///
+/// ```dart
+/// KaeliForm(formKey: _form, child: KaeliFormList(children: [...]))
+/// ```
+class KaeliForm extends StatelessWidget {
+  const KaeliForm({
+    super.key,
+    required this.formKey,
+    required this.child,
+    this.onChanged,
+    this.canPop,
+    this.onPopInvokedWithResult,
+  });
+
+  final GlobalKey<FormState> formKey;
+  final Widget child;
+  final VoidCallback? onChanged;
+  final bool? canPop;
+  final PopInvokedWithResultCallback<Object?>? onPopInvokedWithResult;
+
+  @override
+  Widget build(BuildContext context) => Form(
+    key: formKey,
+    canPop: canPop,
+    onPopInvokedWithResult: onPopInvokedWithResult,
+    onChanged: () {
+      final ctx = formKey.currentContext;
+      if (ctx != null) kaeliRecheckErrors(ctx);
+      onChanged?.call();
+    },
+    child: child,
+  );
+}
+
 /// Desplaza hasta el primer campo con error dentro de [context] (en el orden de la pantalla), lo enfoca y lee su error.
 /// Sirve también para errores que la app marca a mano (llamar después de `setState`).
 void kaeliRevealFirstError(BuildContext context) {

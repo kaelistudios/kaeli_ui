@@ -76,4 +76,37 @@ void main() {
     );
     expect(form.currentState!.validate(), isTrue);
   });
+
+  testWidgets('KaeliForm: el error se quita en cuanto el campo es válido; los demás no se ponen rojos', (tester) async {
+    final form = GlobalKey<FormState>();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: KaeliForm(
+            formKey: form,
+            child: Column(
+              children: [
+                TextFormField(
+                  key: const Key('precio'),
+                  validator: (v) => int.tryParse(v ?? '') == null ? 'Escribe el precio' : null,
+                ),
+                TextFormField(key: const Key('otro'), validator: (v) => (v ?? '').length < 3 ? 'Muy corto' : null),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.enterText(find.byKey(const Key('otro')), 'abcd');
+    expect(kaeliValidateForm(form), isFalse);
+    await tester.pump();
+    expect(find.text('Escribe el precio'), findsOneWidget);
+    await tester.enterText(find.byKey(const Key('precio')), '50');
+    await tester.pump();
+    expect(find.text('Escribe el precio'), findsNothing, reason: 'se quita mientras escribe');
+    // Un campo que estaba bien no se revisa hasta guardar.
+    await tester.enterText(find.byKey(const Key('otro')), 'a');
+    await tester.pump();
+    expect(find.text('Muy corto'), findsNothing);
+  });
 }
