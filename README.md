@@ -17,7 +17,7 @@ En una prueba en iPhone (18 oct 2026) encontramos estos problemas con el teclado
 | Al cambiar de pestaña, el teclado seguía abierto (la pestaña de antes sigue montada). | `KaeliTabDismiss` lo cierra al cambiar de pestaña. |
 | El botón «Guardar» saltaba con el teclado y tapaba el formulario. | **Regla (0.2.0):** `KaeliFormBottomBar` se queda en su lugar; el contenido se achica hasta el teclado (y la barra «Listo») y se desplaza solo para que el campo que se escribe se vea. Para guardar, se cierra el teclado. |
 | Cambiar de mes en un calendario pedía tocar la flecha muchas veces. | `showKaeliMonthYearPicker`: hoja con ruedas de mes y año (✕ y ✓), igual en iPhone y Android. **0.4.0:** `showKaeliDatePicker`, el calendario completo que las usa. |
-| Botones sueltos y desordenados para elegir una opción. | **0.4.0:** `KaeliChoice`: 2–3 opciones cortas → control segmentado de ancho completo; 4 o más o textos largos → lista vertical con ícono y círculo. |
+| Botones sueltos y desordenados para elegir una opción. | **0.4.0:** `KaeliChoice`: 2–3 opciones cortas → control segmentado de ancho completo; 4 o más o textos largos → lista vertical con ícono y círculo. **0.5.0:** tarjetas con ícono (`cards`, `KaeliMultiChoice`) y «Otra» al final (`KaeliChoiceOther`). |
 | Salir de un formulario perdía los cambios sin avisar. | `KaeliUnsavedChangesGuard` pregunta «¿Descartar cambios?» (Descartar / Seguir editando). |
 | «Este dato es obligatorio» sin decir cuál (el campo quedaba fuera de la pantalla, y con `ListView` los campos de abajo ni se validaban). | **0.3.0:** `KaeliFormList` (todos los campos existen), `kaeliValidateForm` (va al primer error, lo enfoca y lo lee) y `KaeliRequiredLabel` (asterisco desde el principio). |
 
@@ -30,7 +30,7 @@ dependencies:
   kaeli_ui:
     git:
       url: https://github.com/kaelistudios/kaeli_ui.git
-      ref: v0.4.1
+      ref: v0.5.0
 ```
 
 Después: `flutter pub get` e `import 'package:kaeli_ui/kaeli_ui.dart';`.
@@ -154,6 +154,16 @@ KaeliChoice<Status>(
 Regla de Kaeli: 2 o 3 opciones cortas (hasta 14 letras, sin segunda línea y con letra hasta 150 %) → control
 segmentado de ancho completo; si no, lista vertical con ícono y círculo de selección. `KaeliChoice.segmented(...)` dice
 cuál toca; `layout: KaeliChoiceLayout.segmented` la fija (selectores de vista en una barra).
+
+**Los dos estilos aprobados (0.5.0, Sesly #51)**, además del segmentado para 2–3 opciones cortas:
+
+| Estilo | Para | Cómo |
+| --- | --- | --- |
+| Tarjetas con ícono (como «Especialidades») | cosas con identidad propia: especialidades, tipos de cita, «¿Dónde?», consultorios | `layout: KaeliChoiceLayout.cards`; varias a la vez: `KaeliMultiChoice`; una tarjeta suelta: `KaeliChoiceCard` |
+| Lista agrupada con círculo (como «Política de cancelación») | valores simples: horas, minutos, estados, filtros, idioma, tema | `layout: KaeliChoiceLayout.list` (o `auto`) |
+
+Cuando el valor puede ser libre, siempre «Otra/Otro» al final con `other: KaeliChoiceOther(label:, selected:,
+onSelected:, field:)`: al elegirla aparece el campo dentro del mismo grupo. Con `value: null` no hay nada elegido.
 
 ### Elegir un día: `showKaeliDatePicker` (0.4.0)
 

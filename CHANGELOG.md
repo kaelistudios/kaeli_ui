@@ -1,5 +1,15 @@
 # Cambios
 
+## 0.5.0 (24 oct 2026)
+
+- Los dos estilos aprobados para elegir (pedido en Sesly #51):
+  - Tarjetas con ícono, como «Especialidades»: `KaeliChoiceLayout.cards`, `KaeliMultiChoice` (varias a la vez) y
+    `KaeliChoiceCard` (una tarjeta suelta, p. ej. «＋ Agregar otra»).
+  - Lista agrupada con círculo, como «Política de cancelación» (`list`, la de siempre).
+- `KaeliChoiceOther`: «Otra/Otro» al final con su campo dentro del grupo, para valores libres.
+- `KaeliChoice.value` acepta null (nada elegido); `KaeliOption.detail` para una segunda línea con formato propio.
+- Sin cambios que rompan: las apps en 0.4.x siguen igual.
+
 ## 0.4.1 (23 oct 2026)
 
 - `KaeliChoice(layout:)`: `KaeliChoiceLayout.segmented` o `.list` fijan la forma (p. ej. un selector de vista en una
