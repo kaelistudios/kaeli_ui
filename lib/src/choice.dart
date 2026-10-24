@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+/// Cómo se muestra [KaeliChoice]: según la regla ([auto]) o siempre de una forma (p. ej. un selector de vista en una
+/// barra, que no puede crecer hacia abajo).
+enum KaeliChoiceLayout { auto, segmented, list }
+
 /// Una opción de [KaeliChoice].
 @immutable
 class KaeliOption<T> {
@@ -37,7 +41,11 @@ class KaeliChoice<T> extends StatelessWidget {
     required this.onChanged,
     this.label,
     this.shortLabel = 14,
+    this.layout = KaeliChoiceLayout.auto,
   });
+
+  /// [KaeliChoiceLayout.auto] sigue la regla; los otros la fijan.
+  final KaeliChoiceLayout layout;
 
   final T value;
   final List<KaeliOption<T>> options;
@@ -60,7 +68,11 @@ class KaeliChoice<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scale = MediaQuery.textScalerOf(context).scale(1);
-    final useSegments = segmented(options, shortLabel: shortLabel, textScale: scale);
+    final useSegments = switch (layout) {
+      KaeliChoiceLayout.auto => segmented(options, shortLabel: shortLabel, textScale: scale),
+      KaeliChoiceLayout.segmented => true,
+      KaeliChoiceLayout.list => false,
+    };
     final body = useSegments ? _segments(context) : _list(context);
     if (label == null) return body;
     return Column(

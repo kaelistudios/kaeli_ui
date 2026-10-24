@@ -50,4 +50,18 @@ void main() {
     expect(KaeliChoice.segmented(const [KaeliOption(1, 'Un texto bastante largo'), KaeliOption(2, 'Otro')]), isFalse);
     expect(KaeliChoice.segmented(const [KaeliOption(1, 'Sí'), KaeliOption(2, 'No')], textScale: 2), isFalse);
   });
+
+  testWidgets('layout fijo: segmentado aunque la letra sea grande', (tester) async {
+    await pump(
+      tester,
+      KaeliChoice<int>(
+        value: 1,
+        layout: KaeliChoiceLayout.segmented,
+        options: const [KaeliOption(1, 'Día'), KaeliOption(2, 'Semana'), KaeliOption(3, 'Mes')],
+        onChanged: (_) {},
+      ),
+      textScale: 2,
+    );
+    expect(find.byType(SegmentedButton<int>), findsOneWidget);
+  });
 }

@@ -30,7 +30,7 @@ dependencies:
   kaeli_ui:
     git:
       url: https://github.com/kaelistudios/kaeli_ui.git
-      ref: v0.4.0
+      ref: v0.4.1
 ```
 
 Después: `flutter pub get` e `import 'package:kaeli_ui/kaeli_ui.dart';`.
@@ -153,7 +153,7 @@ KaeliChoice<Status>(
 
 Regla de Kaeli: 2 o 3 opciones cortas (hasta 14 letras, sin segunda línea y con letra hasta 150 %) → control
 segmentado de ancho completo; si no, lista vertical con ícono y círculo de selección. `KaeliChoice.segmented(...)` dice
-cuál toca.
+cuál toca; `layout: KaeliChoiceLayout.segmented` la fija (selectores de vista en una barra).
 
 ### Elegir un día: `showKaeliDatePicker` (0.4.0)
 

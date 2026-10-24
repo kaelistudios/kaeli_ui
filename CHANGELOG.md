@@ -1,5 +1,10 @@
 # Cambios
 
+## 0.4.1 (23 oct 2026)
+
+- `KaeliChoice(layout:)`: `KaeliChoiceLayout.segmented` o `.list` fijan la forma (p. ej. un selector de vista en una
+  barra que no puede crecer hacia abajo); por defecto, la regla (`auto`).
+
 ## 0.4.0 (23 oct 2026)
 
 - `KaeliChoice` / `KaeliOption` (pedido en Sesly #35): una sola forma de elegir una opción. 2–3 opciones cortas →
