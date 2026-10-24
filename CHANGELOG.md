@@ -1,5 +1,11 @@
 # Cambios
 
+## 0.9.0 (24 oct 2026)
+
+- `KaeliWeekdayPicker` (Sesly #86, #83): los 7 días en una fila de círculos iguales (L M M J V S D); el marcado se
+  rellena del color principal, sin ✓ y sin cambiar de tamaño. Atajos con borde «Lunes a viernes» y «Todos», y días
+  desactivados (`disabled`). Sin cambios que rompan.
+
 ## 0.8.0 (24 oct 2026)
 
 - `KaeliPhoneField`: teléfono con código de país para todas las apps. Bandera y código a la izquierda (abre una hoja con

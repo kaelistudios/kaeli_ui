@@ -21,3 +21,4 @@ export 'src/tab_dismiss.dart';
 export 'src/time_picker.dart';
 export 'src/tour.dart';
 export 'src/unsaved_changes_guard.dart';
+export 'src/weekday_picker.dart';
