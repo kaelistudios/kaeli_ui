@@ -1,6 +1,6 @@
 name: kaeli_ui
 description: "Teclado, formularios y selectores para las apps Flutter de Kaeli."
-version: 0.5.0
+version: 0.6.0
 publish_to: none
 
 environment:

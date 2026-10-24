@@ -11,6 +11,7 @@ export 'src/form_errors.dart';
 export 'src/keyboard.dart';
 export 'src/keyboard_observer.dart';
 export 'src/month_year_picker.dart';
+export 'src/notice.dart';
 export 'src/page.dart';
 export 'src/strings.dart';
 export 'src/tab_dismiss.dart';

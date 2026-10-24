@@ -1,5 +1,12 @@
 # Cambios
 
+## 0.6.0 (24 oct 2026)
+
+- `KaeliForm` y `kaeliRecheckErrors` (Sesly #63): el error rojo se quita en cuanto el campo es válido, mientras se
+  escribe; los campos que estaban bien no se revisan antes de guardar.
+- `showKaeliNotice` / `showKaeliNoticeOn` / `KaeliNoticeAction` (Sesly #70): aviso compacto de una línea con ícono y
+  una acción con ícono a la derecha, encima del botón flotante, que se cierra deslizando.
+
 ## 0.5.0 (24 oct 2026)
 
 - Los dos estilos aprobados para elegir (pedido en Sesly #51):
