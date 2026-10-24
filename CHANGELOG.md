@@ -1,5 +1,16 @@
 # Cambios
 
+## 0.3.0 (23 oct 2026)
+
+- **Errores de formulario (pedido en Sesly #37):** `kaeliValidateForm(formKey)` valida y, si algo falla, desplaza al
+  primer campo con error, lo enfoca y el lector de pantalla lee el error; `kaeliRevealFirstError(context)` hace lo
+  mismo con errores marcados a mano.
+- `KaeliFormList`: cuerpo de formulario que construye todos los campos (con `ListView`, `Form.validate()` no revisaba
+  los de abajo).
+- `KaeliRequiredLabel`: «Nombre *» con el asterisco en el color de error del tema; el lector dice «Nombre,
+  obligatorio». Texto nuevo `required` en `KaeliUiStrings` (4 idiomas).
+- Pruebas de todo lo anterior.
+
 ## 0.2.0 (23 oct 2026)
 
 - **Regla nueva para todas las apps:** `KaeliFormBottomBar` y `KaeliFormScaffold` ya **no suben con el teclado**. El
