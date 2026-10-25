@@ -1,5 +1,13 @@
 # Cambios
 
+## 0.11.0 (25 oct 2026)
+
+- `KaeliPhoneField`: `preferredCountry` (país para un número nuevo, antes que la región del teléfono: p. ej. el del
+  negocio) y `onCountryChanged` (ISO del país al elegirlo o al pegar un número con «+»; sirve para llenar el país de la
+  persona). Sin cambios que rompan.
+- `KaeliOption.key`: la clave va en la fila, la tarjeta o el segmento de `KaeliChoice` y `KaeliMultiChoice` (para las
+  pruebas de cada app).
+
 ## 0.10.0 (24 oct 2026)
 
 - `KaeliBadge` y `KaeliBadgeSync`: número del ícono = avisos sin leer que pasa la app (0 = sin número); al abrir la app

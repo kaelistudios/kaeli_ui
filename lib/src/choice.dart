@@ -10,10 +10,13 @@ enum KaeliChoiceLayout { auto, segmented, list, cards }
 /// Una opción de [KaeliChoice] o [KaeliMultiChoice].
 @immutable
 class KaeliOption<T> {
-  const KaeliOption(this.value, this.label, {this.icon, this.subtitle, this.detail});
+  const KaeliOption(this.value, this.label, {this.icon, this.subtitle, this.detail, this.key});
 
   final T value;
   final String label;
+
+  /// Clave de la opción (0.11.0): va en la fila, la tarjeta o el segmento, para encontrarla en las pruebas de la app.
+  final Key? key;
 
   /// Ícono a la izquierda (lista y tarjetas).
   final IconData? icon;
@@ -126,7 +129,7 @@ class KaeliChoice<T> extends StatelessWidget {
         for (final o in options)
           ButtonSegment<T>(
             value: o.value,
-            label: Text(o.label, textAlign: TextAlign.center, maxLines: 2),
+            label: KeyedSubtree(key: o.key, child: Text(o.label, textAlign: TextAlign.center, maxLines: 2)),
           ),
       ],
       selected: {?value},
@@ -146,6 +149,7 @@ class KaeliChoice<T> extends StatelessWidget {
         for (final (i, o) in options.indexed) ...[
           if (i > 0) const SizedBox(height: 8),
           KaeliChoiceCard(
+            key: o.key,
             icon: o.icon,
             label: o.label,
             subtitle: o.subtitle,
@@ -191,6 +195,7 @@ class KaeliChoice<T> extends StatelessWidget {
             for (final (i, o) in options.indexed) ...[
               if (i > 0) Divider(height: 1, color: colors.outlineVariant),
               RadioListTile<Object?>(
+                key: o.key,
                 value: o.value,
                 enabled: onChanged != null,
                 controlAffinity: ListTileControlAffinity.trailing,
@@ -247,6 +252,7 @@ class KaeliMultiChoice<T> extends StatelessWidget {
     final items = [
       for (final o in options)
         KaeliChoiceCard(
+          key: o.key,
           icon: o.icon,
           label: o.label,
           subtitle: o.subtitle,

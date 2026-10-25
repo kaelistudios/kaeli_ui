@@ -123,6 +123,8 @@ class KaeliPhoneField extends StatefulWidget {
     this.isRequired = false,
     this.decoration = const InputDecoration(),
     this.defaultCountry,
+    this.preferredCountry,
+    this.onCountryChanged,
     this.pinnedCountries = const [],
     this.strings,
     this.focusNode,
@@ -152,6 +154,14 @@ class KaeliPhoneField extends StatefulWidget {
 
   /// País (ISO, «CR») si no hay número guardado ni se sabe la región del teléfono.
   final String? defaultCountry;
+
+  /// País para un número NUEVO (sin número guardado), antes que la región del teléfono (0.11.0). P. ej. el país del
+  /// negocio o de la propiedad: un huésped de un alojamiento de Costa Rica casi siempre empieza con +506.
+  final String? preferredCountry;
+
+  /// Cuando cambia el país del código (al elegirlo en la hoja o al pegar un número con «+»), con su ISO («CR»)
+  /// (0.11.0). Sirve para llenar el país de la persona si está vacío.
+  final ValueChanged<String>? onCountryChanged;
 
   /// Países fijos arriba de la lista (ISO, en este orden), p. ej. los más usados por la app.
   final List<String> pinnedCountries;
@@ -199,6 +209,7 @@ class _KaeliPhoneFieldState extends State<KaeliPhoneField> {
       return;
     }
     _country =
+        kaeliPhoneCountryOf(widget.preferredCountry) ??
         _regionCountry() ??
         kaeliPhoneCountryOf(widget.defaultCountry) ??
         (widget.pinnedCountries.isEmpty ? null : kaeliPhoneCountryOf(widget.pinnedCountries.first)) ??
@@ -243,7 +254,9 @@ class _KaeliPhoneFieldState extends State<KaeliPhoneField> {
         final national = kaeliToE164(t, c) == null ? null : kaeliSplitPhone(kaeliToE164(t, c)).national;
         if (national != null) {
           _adjusting = true;
+          final changed = c != _country;
           setState(() => _country = c);
+          if (changed) widget.onCountryChanged?.call(c.iso);
           _text.value = TextEditingValue(
             text: national,
             selection: TextSelection.collapsed(offset: national.length),
@@ -282,6 +295,7 @@ class _KaeliPhoneFieldState extends State<KaeliPhoneField> {
     );
     if (chosen == null || !mounted || chosen == _country) return;
     setState(() => _country = chosen);
+    widget.onCountryChanged?.call(chosen.iso);
     _notify();
   }
 

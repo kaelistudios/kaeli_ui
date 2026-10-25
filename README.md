@@ -33,7 +33,7 @@ dependencies:
   kaeli_ui:
     git:
       url: https://github.com/kaelistudios/kaeli_ui.git
-      ref: v0.10.0
+      ref: v0.11.0
 ```
 
 Después: `flutter pub get` e `import 'package:kaeli_ui/kaeli_ui.dart';`.
@@ -281,6 +281,10 @@ KaeliPhoneField(
   `kaeliToE164`, `kaeliSplitPhone`, `kaeliCountryFromPhone`, `kaeliFormatNational`, `kaeliSearchPhoneCountries`.
 - **Pruebas:** `KaeliPhoneField.countryKey`, `numberKey`, `searchKey` y `countryTileKey('CR')`. Para fijar la región:
   `tester.platformDispatcher.localesTestValue = const [Locale('es', 'MX')]`. Ver `test/phone_field_test.dart`.
+
+**0.11.0:** `preferredCountry` (el país del negocio para un número nuevo, antes que la región del teléfono) y
+`onCountryChanged` (para llenar el país de la persona si está vacío). **Toda app de Kaeli usa este campo para el
+teléfono:** `kaeli check` avisa si una app tiene un campo de teléfono propio.
 
 ### Tutorial de primera vez, compartir y calificar (0.7.0)
 

@@ -12,6 +12,25 @@ void main() {
     ),
   );
 
+  testWidgets('cada opción lleva su clave (0.11.0) en el segmentado, la lista y las tarjetas', (tester) async {
+    for (final layout in KaeliChoiceLayout.values) {
+      String? picked;
+      await pump(
+        tester,
+        KaeliChoice<String>(
+          layout: layout,
+          value: 'a',
+          options: const [KaeliOption('a', 'Uno', key: Key('op.a')), KaeliOption('b', 'Dos', key: Key('op.b'))],
+          onChanged: (v) => picked = v,
+        ),
+      );
+      expect(find.byKey(const Key('op.b')), findsOneWidget, reason: '$layout');
+      await tester.tap(find.byKey(const Key('op.b')));
+      await tester.pumpAndSettle();
+      expect(picked, 'b', reason: '$layout');
+    }
+  });
+
   testWidgets('2 o 3 opciones cortas: control segmentado; al tocar cambia', (tester) async {
     var value = 'a';
     await pump(

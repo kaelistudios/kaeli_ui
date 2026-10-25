@@ -6,10 +6,17 @@ import 'helpers.dart';
 
 /// Formulario con un teléfono, un botón «Guardar» y lo último que entregó el campo.
 class _PhoneForm extends StatefulWidget {
-  const _PhoneForm({this.initialValue, this.defaultCountry, this.pinned = const [], this.isRequired = false});
+  const _PhoneForm({
+    this.initialValue,
+    this.defaultCountry,
+    this.preferredCountry,
+    this.pinned = const [],
+    this.isRequired = false,
+  });
 
   final String? initialValue;
   final String? defaultCountry;
+  final String? preferredCountry;
   final List<String> pinned;
   final bool isRequired;
 
@@ -18,6 +25,7 @@ class _PhoneForm extends StatefulWidget {
 }
 
 String? lastChanged;
+String? lastCountry;
 String? lastSaved;
 bool? lastValid;
 
@@ -33,6 +41,8 @@ class _PhoneFormState extends State<_PhoneForm> {
           KaeliPhoneField(
             initialValue: widget.initialValue,
             defaultCountry: widget.defaultCountry,
+            preferredCountry: widget.preferredCountry,
+            onCountryChanged: (iso) => lastCountry = iso,
             pinnedCountries: widget.pinned,
             isRequired: widget.isRequired,
             decoration: InputDecoration(
@@ -134,6 +144,18 @@ void main() {
       expect(dialText('+52'), findsOneWidget);
     });
 
+    testWidgets('número nuevo con preferredCountry (el del negocio): ese, antes que la región (0.11.0)', (tester) async {
+      tester.platformDispatcher.localesTestValue = const [Locale('es', 'MX')];
+      addTearDown(tester.platformDispatcher.clearLocalesTestValue);
+      await pumpKaeliApp(tester, const _PhoneForm(preferredCountry: 'CR', defaultCountry: 'US'));
+      expect(dialText('+506'), findsOneWidget);
+    });
+
+    testWidgets('con número guardado, el del número aunque haya preferredCountry', (tester) async {
+      await pumpKaeliApp(tester, const _PhoneForm(initialValue: '+525512345678', preferredCountry: 'CR'));
+      expect(dialText('+52'), findsOneWidget);
+    });
+
     testWidgets('sin región conocida: el país por defecto de la app', (tester) async {
       tester.platformDispatcher.localesTestValue = const [Locale('es')];
       addTearDown(tester.platformDispatcher.clearLocalesTestValue);
@@ -184,6 +206,7 @@ void main() {
       expect(dialText('+52'), findsOneWidget);
       expect(find.text('55 1234 5678'), findsOneWidget);
       expect(lastChanged, '+525512345678');
+      expect(lastCountry, 'MX', reason: 'avisa el cambio de país (0.11.0)');
     });
 
     testWidgets('validación: largo y obligatorio, con KaeliForm y kaeliValidateForm', (tester) async {
@@ -242,9 +265,11 @@ void main() {
       await tester.pumpAndSettle();
       await tester.enterText(find.byKey(KaeliPhoneField.searchKey), '52');
       await tester.pump();
+      lastCountry = null;
       await tester.tap(find.byKey(KaeliPhoneField.countryTileKey('MX')));
       await tester.pumpAndSettle();
       expect(lastChanged, '+525512345678');
+      expect(lastCountry, 'MX');
     });
 
     testWidgets('el lector de pantalla anuncia «País: Costa Rica, +506»', (tester) async {

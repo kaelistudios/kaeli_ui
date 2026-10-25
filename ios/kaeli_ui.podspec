@@ -1,7 +1,7 @@
 # kaeli_ui con CocoaPods (KaeliBadge, 0.10.0). Las apps con Swift Package Manager usan ios/kaeli_ui/Package.swift.
 Pod::Spec.new do |s|
   s.name             = 'kaeli_ui'
-  s.version          = '0.10.0'
+  s.version          = '0.11.0'
   s.summary          = 'Paquete compartido de las apps de Kaeli (número del ícono).'
   s.description      = 'KaeliBadge: número del ícono y notificaciones ya vistas.'
   s.homepage         = 'https://github.com/kaelistudios/kaeli_ui'
