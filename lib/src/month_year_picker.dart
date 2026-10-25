@@ -174,66 +174,86 @@ class _KaeliMonthYearPickerState extends State<KaeliMonthYearPicker> {
       ),
     );
 
+    // Alto del encabezado (✕, título y ✓) para calcular cuántas filas caben.
+    final titleStyle = theme.textTheme.titleMedium;
+    final header =
+        4 +
+        (widget.title == null
+            ? 48.0
+            : scaler
+                  .scale((titleStyle?.fontSize ?? 16) * (titleStyle?.height ?? 1.4) * 2)
+                  .clamp(48.0, double.infinity));
+
     return SafeArea(
       top: false,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(4, 4, 4, 0),
-            child: Row(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // 5 filas si caben; si no (letra grande en pantalla pequeña), las que quepan, nunca menos de 3. Si ni así
+          // cabe, la hoja se desplaza.
+          final room = constraints.maxHeight - header - 8;
+          final rows = room.isFinite ? (room / itemExtent).floor().clamp(3, 5) : 5;
+          return SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                IconButton(icon: const Icon(Icons.close), tooltip: texts.cancel, onPressed: widget.onCancel),
-                Expanded(
-                  child: Text(
-                    widget.title ?? '',
-                    style: theme.textTheme.titleMedium?.copyWith(color: colors.onSurface),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
+                Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(4, 4, 4, 0),
+                  child: Row(
+                    children: [
+                      IconButton(icon: const Icon(Icons.close), tooltip: texts.cancel, onPressed: widget.onCancel),
+                      Expanded(
+                        child: Text(
+                          widget.title ?? '',
+                          style: theme.textTheme.titleMedium?.copyWith(color: colors.onSurface),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.check, color: colors.primary),
+                        tooltip: texts.confirm,
+                        onPressed: () => widget.onConfirm(_value),
+                      ),
+                    ],
                   ),
                 ),
-                IconButton(
-                  icon: Icon(Icons.check, color: colors.primary),
-                  tooltip: texts.confirm,
-                  onPressed: () => widget.onConfirm(_value),
+                SizedBox(
+                  height: itemExtent * rows,
+                  child: DefaultTextStyle(
+                    style: style,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: wheel(
+                            key: KaeliMonthYearPicker.monthWheelKey,
+                            controller: _months,
+                            count: 12,
+                            label: (i) => names[i],
+                            onChanged: (i) => _month = i + 1,
+                            semantics: names[_month - 1],
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: wheel(
+                            key: KaeliMonthYearPicker.yearWheelKey,
+                            controller: _years,
+                            count: _last.year - _first.year + 1,
+                            label: (i) => '${_first.year + i}',
+                            onChanged: (i) => _year = _first.year + i,
+                            semantics: '$_year',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
+                const SizedBox(height: 8),
               ],
             ),
-          ),
-          SizedBox(
-            height: itemExtent * 5,
-            child: DefaultTextStyle(
-              style: style,
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: wheel(
-                      key: KaeliMonthYearPicker.monthWheelKey,
-                      controller: _months,
-                      count: 12,
-                      label: (i) => names[i],
-                      onChanged: (i) => _month = i + 1,
-                      semantics: names[_month - 1],
-                    ),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: wheel(
-                      key: KaeliMonthYearPicker.yearWheelKey,
-                      controller: _years,
-                      count: _last.year - _first.year + 1,
-                      label: (i) => '${_first.year + i}',
-                      onChanged: (i) => _year = _first.year + i,
-                      semantics: '$_year',
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-        ],
+          );
+        },
       ),
     );
   }

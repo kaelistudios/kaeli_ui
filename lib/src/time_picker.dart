@@ -65,52 +65,73 @@ class _KaeliTimePickerState extends State<KaeliTimePicker> {
     final colors = theme.colorScheme;
     final texts = KaeliUiTexts.of(context, widget.strings);
     final scaler = MediaQuery.textScalerOf(context);
+    final titleStyle = theme.textTheme.titleMedium;
+    final header =
+        4 +
+        (widget.title == null
+            ? 48.0
+            : scaler
+                  .scale((titleStyle?.fontSize ?? 16) * (titleStyle?.height ?? 1.4) * 2)
+                  .clamp(48.0, double.infinity));
+    final wanted = scaler.scale(216).clamp(216.0, 320.0);
+    // La rueda de la hora muestra filas de 32: al menos 3 a la vista.
+    final atLeast = scaler.scale(32 * 3).clamp(96.0, wanted);
+
     return SafeArea(
       top: false,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(4, 4, 4, 0),
-            child: Row(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Si no cabe (letra grande en pantalla pequeña), la rueda se achica hasta 3 filas y la hoja se desplaza.
+          final room = constraints.maxHeight - header - 8;
+          final height = room.isFinite ? room.clamp(atLeast, wanted) : wanted;
+          return SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                IconButton(icon: const Icon(Icons.close), tooltip: texts.cancel, onPressed: widget.onCancel),
-                Expanded(
-                  child: Text(
-                    widget.title ?? '',
-                    style: theme.textTheme.titleMedium?.copyWith(color: colors.onSurface),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
+                Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(4, 4, 4, 0),
+                  child: Row(
+                    children: [
+                      IconButton(icon: const Icon(Icons.close), tooltip: texts.cancel, onPressed: widget.onCancel),
+                      Expanded(
+                        child: Text(
+                          widget.title ?? '',
+                          style: theme.textTheme.titleMedium?.copyWith(color: colors.onSurface),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.check, color: colors.primary),
+                        tooltip: texts.confirm,
+                        onPressed: () => widget.onConfirm(_value),
+                      ),
+                    ],
                   ),
                 ),
-                IconButton(
-                  icon: Icon(Icons.check, color: colors.primary),
-                  tooltip: texts.confirm,
-                  onPressed: () => widget.onConfirm(_value),
+                SizedBox(
+                  height: height,
+                  child: CupertinoTheme(
+                    data: CupertinoThemeData(
+                      brightness: theme.brightness,
+                      textTheme: CupertinoTextThemeData(
+                        dateTimePickerTextStyle: theme.textTheme.titleLarge?.copyWith(color: colors.onSurface),
+                      ),
+                    ),
+                    child: CupertinoDatePicker(
+                      mode: CupertinoDatePickerMode.time,
+                      use24hFormat: MediaQuery.alwaysUse24HourFormatOf(context),
+                      minuteInterval: widget.minuteInterval,
+                      initialDateTime: DateTime(2000, 1, 1, _value.hour, _value.minute),
+                      onDateTimeChanged: (d) => _value = TimeOfDay(hour: d.hour, minute: d.minute),
+                    ),
+                  ),
                 ),
+                const SizedBox(height: 8),
               ],
             ),
-          ),
-          SizedBox(
-            height: scaler.scale(216).clamp(216, 320),
-            child: CupertinoTheme(
-              data: CupertinoThemeData(
-                brightness: theme.brightness,
-                textTheme: CupertinoTextThemeData(
-                  dateTimePickerTextStyle: theme.textTheme.titleLarge?.copyWith(color: colors.onSurface),
-                ),
-              ),
-              child: CupertinoDatePicker(
-                mode: CupertinoDatePickerMode.time,
-                use24hFormat: MediaQuery.alwaysUse24HourFormatOf(context),
-                minuteInterval: widget.minuteInterval,
-                initialDateTime: DateTime(2000, 1, 1, _value.hour, _value.minute),
-                onDateTimeChanged: (d) => _value = TimeOfDay(hour: d.hour, minute: d.minute),
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-        ],
+          );
+        },
       ),
     );
   }

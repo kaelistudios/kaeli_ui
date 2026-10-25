@@ -1,5 +1,13 @@
 # Cambios
 
+## 0.9.1 (25 oct 2026)
+
+- Ruedas de mes y año (`showKaeliMonthYearPicker`, también desde «mes año ▾» de `showKaeliDatePicker`) y de la hora
+  (`showKaeliTimePicker`) con letra grande en pantalla pequeña (Blunkoo, 200 % en un iPhone SE): la hoja ya no se
+  sale por abajo. Las ruedas muestran menos filas cuando no caben (nunca menos de 3) y, si ni así cabe, la hoja se
+  desplaza. Con espacio, todo queda igual (5 filas de mes y año). Sin cambios que rompan.
+- Versión de mantenimiento sobre 0.9.0 (rama `v0.9.x`): `main` ya va en 0.11.0.
+
 ## 0.9.0 (24 oct 2026)
 
 - `KaeliWeekdayPicker` (Sesly #86, #83): los 7 días en una fila de círculos iguales (L M M J V S D); el marcado se

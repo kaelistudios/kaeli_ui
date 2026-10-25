@@ -1,4 +1,5 @@
 // KaeliMonthYearPicker: ruedas de mes y año, ✕ y ✓, meses en el idioma de la app y rango.
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kaeli_ui/kaeli_ui.dart';
@@ -111,6 +112,31 @@ void main() {
       expect(find.byTooltip(cancel), findsOneWidget);
     });
   }
+
+  testWidgets('letra al 200 % en pantalla pequeña: cabe con menos filas (al menos 3) y ✓ sigue funcionando', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.view.reset);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await _open(tester, _Host(initial: DateTime(2026, 10)));
+    expect(tester.takeException(), isNull);
+    final wheel = tester.getSize(find.byKey(KaeliMonthYearPicker.monthWheelKey)).height;
+    final row = tester.widget<CupertinoPicker>(find.byKey(KaeliMonthYearPicker.monthWheelKey)).itemExtent;
+    expect(wheel / row, inInclusiveRange(3, 4), reason: 'menos de 5 filas, nunca menos de 3');
+    await tester.tap(find.byTooltip('Aceptar'));
+    await tester.pumpAndSettle();
+    expect(_result(tester), '2026-10');
+  });
+
+  testWidgets('con espacio, 5 filas como siempre', (tester) async {
+    await _open(tester, _Host(initial: DateTime(2026, 10)));
+    final wheel = tester.getSize(find.byKey(KaeliMonthYearPicker.monthWheelKey)).height;
+    final row = tester.widget<CupertinoPicker>(find.byKey(KaeliMonthYearPicker.monthWheelKey)).itemExtent;
+    expect(wheel / row, 5);
+  });
 
   test('rango por defecto: 5 años atrás y 10 adelante, siempre con el mes inicial', () {
     final now = DateTime(2026, 10, 23);
