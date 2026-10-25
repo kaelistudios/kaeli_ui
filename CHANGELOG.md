@@ -1,5 +1,14 @@
 # Cambios
 
+## 0.10.0 (24 oct 2026)
+
+- `KaeliBadge` y `KaeliBadgeSync`: número del ícono = avisos sin leer que pasa la app (0 = sin número); al abrir la app
+  y al volver a ella se quitan las notificaciones ya vistas (iPhone: centro de notificaciones; Android: barra, que es
+  de donde el lanzador saca el número o el punto). `KaeliBadge.pushBadgeFor` para que el push lleve el conteo real o
+  nada. Sale de AlojaConmigo 1.0.0 (13).
+- El paquete pasa a ser **plugin** (canal nativo «kaeli_ui/badge»): Swift (Swift Package Manager y CocoaPods) y Java.
+  Hay que compilar la app de nuevo. Sin cambios que rompan en Dart.
+
 ## 0.9.0 (24 oct 2026)
 
 - `KaeliWeekdayPicker` (Sesly #86, #83): los 7 días en una fila de círculos iguales (L M M J V S D); el marcado se

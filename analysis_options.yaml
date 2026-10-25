@@ -8,3 +8,5 @@ analyzer:
   exclude:
     - example/**
     - build/**
+    - android/**
+    - ios/**

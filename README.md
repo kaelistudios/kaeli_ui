@@ -21,6 +21,7 @@ En una prueba en iPhone (18 oct 2026) encontramos estos problemas con el teclado
 | Salir de un formulario perdía los cambios sin avisar. | `KaeliUnsavedChangesGuard` pregunta «¿Descartar cambios?» (Descartar / Seguir editando). |
 | Cada app tenía su propio tutorial de primera vez, su «Compartir» y su «Calificar». | **0.7.0:** `showKaeliTourOnce` / `showKaeliTour` (tutorial con «Saltar»), `kaeliShareApp`, `kaeliOpenStoreToRate` y `KaeliReviewPrompt.milestone`. |
 | Cada app escribía el teléfono a su manera (con o sin código de país, guardado en formatos distintos). | **0.8.0:** `KaeliPhoneField`: bandera y código a la izquierda, número a la derecha; siempre E.164. |
+| El número del ícono no bajaba al leer los avisos (AlojaConmigo, reporte de Patricia). | **0.10.0:** `KaeliBadge` / `KaeliBadgeSync`: el ícono muestra solo los avisos sin leer que pasa la app; al abrir o volver a la app se limpian las notificaciones ya vistas. |
 | «Este dato es obligatorio» sin decir cuál (el campo quedaba fuera de la pantalla, y con `ListView` los campos de abajo ni se validaban). | **0.3.0:** `KaeliFormList` (todos los campos existen), `kaeliValidateForm` (va al primer error, lo enfoca y lo lee) y `KaeliRequiredLabel` (asterisco desde el principio). |
 
 ## Instalación
@@ -32,7 +33,7 @@ dependencies:
   kaeli_ui:
     git:
       url: https://github.com/kaelistudios/kaeli_ui.git
-      ref: v0.8.0
+      ref: v0.10.0
 ```
 
 Después: `flutter pub get` e `import 'package:kaeli_ui/kaeli_ui.dart';`.
@@ -335,6 +336,31 @@ await KaeliReviewPrompt.milestone(after: 3);
   `KaeliPlatformActions`) anota lo que se compartió, la ficha abierta y las ventanas pedidas, y
   `SharedPreferences.setMockInitialValues({})` empieza sin nada guardado. Ver `test/tour_test.dart` y
   `test/app_extras_test.dart`.
+
+### Número del ícono: `KaeliBadge` y `KaeliBadgeSync` (0.10.0)
+
+Para **toda app que recibe notificaciones**. Cada app calcula sus avisos **sin leer** (el paquete no sabe qué es un
+aviso) y se los pasa:
+
+```dart
+MaterialApp.router(
+  builder: (context, child) => KaeliKeyboard(
+    child: KaeliBadgeSync(unread: avisosSinLeer, enabled: haySesion, child: child!),
+  ),
+)
+```
+
+- Al abrir la app y al volver a ella: quita las notificaciones ya vistas y pone el número.
+- Cuando cambia `unread` (al leer los avisos): pone el número. `0` = sin número; sin sesión (`enabled: false`), 0.
+- **iPhone:** el número va en el ícono. **Android:** el lanzador muestra el número o el punto según lo que queda en la
+  barra; la app la limpia al abrir, al volver y con 0.
+- A mano: `KaeliBadge.set(n)` y `KaeliBadge.clearDelivered()`. En pruebas: `KaeliBadge.platform = MiFalso();`.
+- **Push:** si el servidor manda número (`aps.badge`), que sea el conteo **real** de no leídas
+  (`KaeliBadge.pushBadgeFor(real)`, null = no mandar número). Si los avisos se calculan en el teléfono, el push no
+  lleva número.
+- Es un **plugin** (código nativo): después de actualizar, compilar la app de nuevo (no basta con recargar). iPhone con
+  Swift Package Manager o CocoaPods; Android en Java (sirve con cualquier versión de Kotlin de la app).
+- `kaeli check --app <app>` avisa si una app recibe notificaciones y no usa `KaeliBadge`.
 
 ## Textos e idiomas
 

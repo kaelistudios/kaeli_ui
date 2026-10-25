@@ -1,0 +1,19 @@
+// kaeli_ui en Android (KaeliBadge, 0.10.0): solo Java, sin Kotlin, para servir con la versión de Gradle de cada app.
+group = "com.kaeli.kaeli_ui"
+version = "0.10.0"
+
+apply plugin: "com.android.library"
+
+android {
+    namespace = "com.kaeli.kaeli_ui"
+    compileSdk = 36
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    defaultConfig {
+        minSdk = 21
+    }
+}

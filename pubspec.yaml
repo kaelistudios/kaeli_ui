@@ -1,6 +1,6 @@
 name: kaeli_ui
-description: "Teclado, formularios, teléfono con código de país, selectores, tutorial, compartir y calificar para las apps Flutter de Kaeli."
-version: 0.9.0
+description: "Teclado, formularios, teléfono con código de país, selectores, tutorial, compartir, calificar y número del ícono para las apps Flutter de Kaeli."
+version: 0.10.0
 publish_to: none
 
 environment:
@@ -25,3 +25,14 @@ dev_dependencies:
   flutter_localizations:
     sdk: flutter
   flutter_lints: ^6.0.0
+
+# 0.10.0: plugin (código nativo) para KaeliBadge, el número del ícono. Android en Java; iPhone con Swift Package
+# Manager (ios/kaeli_ui/Package.swift) o CocoaPods (ios/kaeli_ui.podspec).
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: com.kaeli.kaeli_ui
+        pluginClass: KaeliUiPlugin
+      ios:
+        pluginClass: KaeliUiPlugin
