@@ -1,5 +1,10 @@
 # Cambios
 
+## 0.13.1 (25 oct 2026)
+
+- Selector de mes y año: la hoja sale encima de todo (también de la barra de pestañas) y las ruedas muestran 5
+  opciones enteras (rueda casi plana).
+
 ## 0.13.0 (25 oct 2026)
 
 - Selector de mes y año más claro y compacto: título «Elige mes y año» (`KaeliUiStrings.monthYearTitle`), botones de

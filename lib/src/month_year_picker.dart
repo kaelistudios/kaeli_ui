@@ -32,6 +32,8 @@ Future<DateTime?> showKaeliMonthYearPicker(
   KaeliUiStrings? strings,
 }) => showModalBottomSheet<DateTime>(
   context: context,
+  // 0.13.1: encima de todo (también de la barra de pestañas de la app).
+  useRootNavigator: true,
   useSafeArea: true,
   showDragHandle: false,
   // 0.13.0: hoja corta, del alto justo (título, ruedas y botones).
@@ -177,6 +179,9 @@ class _KaeliMonthYearPickerState extends State<KaeliMonthYearPicker> {
         itemExtent: itemExtent,
         selectionOverlay: overlay,
         backgroundColor: Colors.transparent,
+        // 0.13.1: rueda casi plana: se ven 5 opciones enteras (con la curva se asomaban 7, cortadas).
+        diameterRatio: 4,
+        squeeze: 1,
         onSelectedItemChanged: onChanged,
         childCount: count,
         itemBuilder: (context, i) => Center(
