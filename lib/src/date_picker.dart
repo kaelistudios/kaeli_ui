@@ -10,6 +10,8 @@ import 'strings.dart';
 /// - [initial]: el día marcado; si es null, se abre en [openAt] (p. ej. unos años atrás para una fecha de nacimiento)
 ///   o en hoy, sin marcar ninguno.
 /// - [first] y [last] limitan los días que se pueden elegir (p. ej. `last: hoy` para no aceptar fechas futuras).
+/// - [isUnavailable] (0.15.0): días ocupados (reservas, bloqueos): salen tachados y no se pueden elegir, como en la
+///   web de reservas. Los de fuera de [first]–[last] solo salen apagados.
 /// - [firstDayOfWeek] (0.14.0): la semana empieza en lunes en todos los idiomas (`DateTime.monday`, por defecto);
 ///   `DateTime.sunday` la empieza en domingo. Antes seguía al idioma (en inglés de EE. UU., domingo).
 Future<DateTime?> showKaeliDatePicker(
@@ -21,6 +23,7 @@ Future<DateTime?> showKaeliDatePicker(
   String? title,
   KaeliUiStrings? strings,
   int firstDayOfWeek = DateTime.monday,
+  bool Function(DateTime day)? isUnavailable,
 }) => showDialog<DateTime>(
   context: context,
   builder: (context) => KaeliDatePickerDialog(
@@ -31,6 +34,7 @@ Future<DateTime?> showKaeliDatePicker(
     title: title,
     strings: strings,
     firstDayOfWeek: firstDayOfWeek,
+    isUnavailable: isUnavailable,
   ),
 );
 
@@ -44,6 +48,7 @@ class KaeliDatePickerDialog extends StatefulWidget {
     this.title,
     this.strings,
     this.firstDayOfWeek = DateTime.monday,
+    this.isUnavailable,
   });
 
   final DateTime? initial;
@@ -56,6 +61,9 @@ class KaeliDatePickerDialog extends StatefulWidget {
   /// Primer día de la semana (`DateTime.monday` … `DateTime.sunday`); lunes por defecto.
   final int firstDayOfWeek;
 
+  /// Días ocupados: tachados y sin poder elegirse (0.15.0).
+  final bool Function(DateTime day)? isUnavailable;
+
   /// Llave del botón «mes año ▾» (pruebas).
   static const monthButtonKey = Key('kaeli-date-month');
 
@@ -64,7 +72,8 @@ class KaeliDatePickerDialog extends StatefulWidget {
 }
 
 class _KaeliDatePickerDialogState extends State<KaeliDatePickerDialog> {
-  late DateTime? _selected = widget.initial == null ? null : _day(widget.initial!);
+  // Un día ocupado nunca queda elegido de entrada (0.15.0): «Aceptar» no lo dejaría pasar sin querer.
+  late DateTime? _selected = widget.initial == null || _taken(_day(widget.initial!)) ? null : _day(widget.initial!);
   late DateTime _month = _clampMonth(_monthOf(widget.initial ?? widget.openAt ?? DateTime.now()));
 
   static DateTime _day(DateTime d) => DateTime(d.year, d.month, d.day);
@@ -76,7 +85,11 @@ class _KaeliDatePickerDialogState extends State<KaeliDatePickerDialog> {
     return m.isBefore(lo) ? lo : (m.isAfter(hi) ? hi : m);
   }
 
-  bool _enabled(DateTime d) => !d.isBefore(_day(widget.first)) && !d.isAfter(_day(widget.last));
+  bool _inRange(DateTime d) => !d.isBefore(_day(widget.first)) && !d.isAfter(_day(widget.last));
+
+  bool _taken(DateTime d) => widget.isUnavailable?.call(d) ?? false;
+
+  bool _enabled(DateTime d) => _inRange(d) && !_taken(d);
 
   /// 0.13.0: las ruedas de mes y año reemplazan los días en la MISMA ventana (antes se abría otra hoja encima).
   var _choosingMonth = false;
@@ -104,13 +117,14 @@ class _KaeliDatePickerDialogState extends State<KaeliDatePickerDialog> {
     Widget cell(int dayNumber) {
       final d = DateTime(_month.year, _month.month, dayNumber);
       final enabled = _enabled(d);
+      final taken = _inRange(d) && _taken(d);
       final selected = d == _selected;
       final isToday = d == today;
       return Semantics(
         selected: selected,
         button: true,
         enabled: enabled,
-        label: material.formatFullDate(d),
+        label: taken ? '${material.formatFullDate(d)} · ${texts.dayUnavailable}' : material.formatFullDate(d),
         excludeSemantics: true,
         child: InkResponse(
           onTap: enabled ? () => setState(() => _selected = d) : null,
@@ -131,6 +145,8 @@ class _KaeliDatePickerDialogState extends State<KaeliDatePickerDialog> {
                     : enabled
                     ? colors.onSurface
                     : colors.onSurface.withValues(alpha: 0.38),
+                decoration: taken ? TextDecoration.lineThrough : null,
+                decorationColor: colors.onSurface.withValues(alpha: 0.6),
               ),
             ),
           ),

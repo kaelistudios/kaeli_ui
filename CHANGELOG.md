@@ -1,5 +1,12 @@
 # Cambios
 
+## 0.15.0 (25 oct 2026)
+
+- `showKaeliDatePicker` / `KaeliDatePickerDialog`: nuevo `isUnavailable` para los días ocupados (reservas, bloqueos):
+  salen tachados, no se pueden elegir y el lector de pantalla dice «No disponible» (`KaeliUiStrings.dayUnavailable`).
+- `kaeliValidateForm` / `kaeliRevealFirstError`: el campo con error queda arriba de la pantalla (antes, al enfocarlo,
+  quedaba pegado abajo, donde un aviso o el teclado lo tapaban).
+
 ## 0.14.0 (25 oct 2026)
 
 - `showKaeliDatePicker` / `KaeliDatePickerDialog`: la semana empieza en LUNES en todos los idiomas (antes seguía al

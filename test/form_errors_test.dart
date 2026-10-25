@@ -99,7 +99,7 @@ void main() {
     );
     await tester.enterText(find.byKey(const Key('otro')), 'abcd');
     expect(kaeliValidateForm(form), isFalse);
-    await tester.pump();
+    await tester.pumpAndSettle(); // 0.15.0: el campo se acomoda arriba después de enfocarlo.
     expect(find.text('Escribe el precio'), findsOneWidget);
     await tester.enterText(find.byKey(const Key('precio')), '50');
     await tester.pump();

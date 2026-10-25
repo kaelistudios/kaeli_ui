@@ -27,6 +27,7 @@ class KaeliUiStrings {
     this.required,
     this.monthYearTitle,
     this.monthYearDone,
+    this.dayUnavailable,
   });
 
   /// Botón de la barra sobre el teclado de iPhone («Listo»).
@@ -59,6 +60,9 @@ class KaeliUiStrings {
   /// 0.13.0: botón que confirma el mes y el año («Listo»).
   final String? monthYearDone;
 
+  /// 0.15.0: un día ocupado en el selector de fechas, para el lector de pantalla («No disponible»).
+  final String? dayUnavailable;
+
   /// Textos incluidos, por código de idioma.
   static const Map<String, KaeliUiStrings> builtIn = {
     'es': KaeliUiStrings(
@@ -72,6 +76,7 @@ class KaeliUiStrings {
       required: 'obligatorio',
       monthYearTitle: "Elige mes y año",
       monthYearDone: 'Listo',
+      dayUnavailable: 'No disponible',
     ),
     'en': KaeliUiStrings(
       done: 'Done',
@@ -84,6 +89,7 @@ class KaeliUiStrings {
       required: 'required',
       monthYearTitle: "Choose month and year",
       monthYearDone: 'Done',
+      dayUnavailable: 'Not available',
     ),
     'fr': KaeliUiStrings(
       done: 'OK',
@@ -96,6 +102,7 @@ class KaeliUiStrings {
       required: 'obligatoire',
       monthYearTitle: "Choisissez le mois et l'année",
       monthYearDone: 'OK',
+      dayUnavailable: 'Indisponible',
     ),
     'pt': KaeliUiStrings(
       done: 'OK',
@@ -108,6 +115,7 @@ class KaeliUiStrings {
       required: 'obrigatório',
       monthYearTitle: "Escolha o mês e o ano",
       monthYearDone: 'Pronto',
+      dayUnavailable: 'Indisponível',
     ),
   };
 
@@ -125,6 +133,7 @@ class KaeliUiStrings {
       required: overrides?.required ?? base.required!,
       monthYearTitle: overrides?.monthYearTitle ?? base.monthYearTitle!,
       monthYearDone: overrides?.monthYearDone ?? base.monthYearDone!,
+      dayUnavailable: overrides?.dayUnavailable ?? base.dayUnavailable!,
     );
   }
 
@@ -142,6 +151,7 @@ class KaeliUiStrings {
           required: other.required ?? required,
           monthYearTitle: other.monthYearTitle ?? monthYearTitle,
           monthYearDone: other.monthYearDone ?? monthYearDone,
+          dayUnavailable: other.dayUnavailable ?? dayUnavailable,
         );
 }
 
@@ -159,6 +169,7 @@ class KaeliUiTexts {
     required this.required,
     required this.monthYearTitle,
     required this.monthYearDone,
+    required this.dayUnavailable,
   });
 
   final String done;
@@ -171,6 +182,7 @@ class KaeliUiTexts {
   final String required;
   final String monthYearTitle;
   final String monthYearDone;
+  final String dayUnavailable;
 
   /// Textos para [context]: idioma de `Localizations`, cambios de [KaeliKeyboard] y, encima, [overrides].
   static KaeliUiTexts of(BuildContext context, [KaeliUiStrings? overrides]) {

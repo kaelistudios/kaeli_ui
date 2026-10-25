@@ -88,8 +88,6 @@ void kaeliRevealFirstError(BuildContext context) {
   (context as Element).visitChildren(visit);
   final field = first;
   if (field == null) return;
-  // Un poco abajo del borde de arriba: así se ve la etiqueta y el teclado no lo tapa.
-  Scrollable.ensureVisible(field, alignment: 0.15, duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
   FocusNode? focus;
   void findFocus(Element e) {
     if (focus != null) return;
@@ -103,6 +101,20 @@ void kaeliRevealFirstError(BuildContext context) {
 
   findFocus(field);
   focus?.requestFocus();
+  // Un poco abajo del borde de arriba: así se ve la etiqueta y ni el teclado ni un aviso abajo lo tapan. Después de
+  // enfocar (0.15.0): el enfoque hace su propio desplazamiento mínimo y dejaba el campo pegado abajo.
+  void reveal() {
+    if (field.mounted) {
+      Scrollable.ensureVisible(field, alignment: 0.15, duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
+    }
+  }
+
+  if (focus == null) {
+    reveal();
+  } else {
+    // El campo enfocado mueve la pantalla para mostrar el cursor (~100 ms); después se acomoda arriba.
+    Future<void>.delayed(const Duration(milliseconds: 150), reveal);
+  }
   final text = message;
   if (text != null && text.isNotEmpty) {
     final view = View.maybeOf(context);
