@@ -161,6 +161,41 @@ String kaeliFormatNational(String digits, KaeliPhoneCountry country) {
   return _group(d, sizes);
 }
 
+/// Mientras se escribe (0.12.0): el número con los espacios del país desde la primera cifra, con los grupos del largo
+/// completo («8555» → «8555», «85553» → «8555 3», «85553333» → «8555 3333»). Si ya tiene el largo completo o más, como
+/// [kaeliFormatNational].
+String kaeliFormatTyping(String typed, KaeliPhoneCountry country) {
+  final d = typed.replaceAll(RegExp(r'\D'), '');
+  if (d.isEmpty) return '';
+  if (d.length >= country.max) return kaeliFormatNational(d, country);
+  final full = kaeliFormatNational(d.padRight(country.max, '0'), country);
+  final out = StringBuffer();
+  var n = 0;
+  for (final ch in full.split('')) {
+    if (n == d.length) break;
+    out.write(ch);
+    if (ch != ' ') n++;
+  }
+  return out.toString().trimRight();
+}
+
+/// Un número de ejemplo del país (0.12.0), ya con espacios: Costa Rica «8888 7777», Colombia «888 877 7777»…
+/// Empieza con el primer código de área si el país comparte código (+1, +7).
+String kaeliPhoneExample(KaeliPhoneCountry country) {
+  final start = country.prefixes.isEmpty ? '' : country.prefixes.first;
+  final n = country.max;
+  final half = (n / 2).ceil();
+  final digits = StringBuffer(start);
+  while (digits.length < n) {
+    digits.write(digits.length < half ? '8' : '7');
+  }
+  return kaeliFormatNational(digits.toString(), country);
+}
+
+/// Cuántas cifras lleva un número del país, para los avisos («8» o «9–10»).
+String kaeliPhoneDigitsLabel(KaeliPhoneCountry country) =>
+    country.min == country.max ? '${country.min}' : '${country.min}–${country.max}';
+
 String _fold(String s) {
   const from = 'áàâäãåéèêëíìîïóòôöõúùûüñçÁÀÂÄÃÅÉÈÊËÍÌÎÏÓÒÔÖÕÚÙÛÜÑÇ’';
   const to = 'aaaaaaeeeeiiiiooooouuuuncAAAAAAEEEEIIIIOOOOOUUUUNC\'';

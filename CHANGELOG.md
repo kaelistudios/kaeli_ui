@@ -1,5 +1,14 @@
 # Cambios
 
+## 0.12.0 (25 oct 2026)
+
+- `KaeliPhoneField`: el número sale con los espacios del país mientras se escribe («8555 3333»,
+  `kaeliFormatTyping`); debajo, «Por ejemplo: 8888 7777» con un número del país elegido (`kaeliPhoneExample`,
+  `showExample`, y de pista dentro del campo); el aviso del largo dice cuántas cifras lleva el país («Un número de
+  Colombia tiene 10 cifras», `KaeliPhoneStrings.invalidLength`) y sale al salir del campo (o enseguida si se pasa de
+  cifras), sin esperar a guardar. Textos nuevos en es/en/fr/pt. Sin cambios que rompan (el mensaje de largo reemplaza
+  a «Número no válido» en los avisos de largo).
+
 ## 0.11.0 (25 oct 2026)
 
 - `KaeliPhoneField`: `preferredCountry` (país para un número nuevo, antes que la región del teléfono: p. ej. el del

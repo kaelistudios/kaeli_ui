@@ -14,6 +14,8 @@ class KaeliPhoneStrings {
     this.invalid,
     this.required,
     this.countryLabel,
+    this.invalidLength,
+    this.example,
   });
 
   /// Etiqueta del selector de país («País»).
@@ -37,6 +39,12 @@ class KaeliPhoneStrings {
   /// Lo que anuncia el lector de pantalla en el selector: «País: {name}, +{dial}».
   final String? countryLabel;
 
+  /// 0.12.0: largo equivocado para el país: «Un número de {country} tiene {digits} cifras».
+  final String? invalidLength;
+
+  /// 0.12.0: ayuda debajo del campo con un número de ejemplo del país elegido: «Por ejemplo: {number}».
+  final String? example;
+
   static const Map<String, KaeliPhoneStrings> builtIn = {
     'es': KaeliPhoneStrings(
       country: 'País',
@@ -46,6 +54,8 @@ class KaeliPhoneStrings {
       invalid: 'Número no válido',
       required: 'Escribe un número de teléfono',
       countryLabel: 'País: {name}, +{dial}',
+      invalidLength: 'Un número de {country} tiene {digits} cifras',
+      example: 'Por ejemplo: {number}',
     ),
     'en': KaeliPhoneStrings(
       country: 'Country',
@@ -55,6 +65,8 @@ class KaeliPhoneStrings {
       invalid: 'Invalid number',
       required: 'Enter a phone number',
       countryLabel: 'Country: {name}, +{dial}',
+      invalidLength: 'A {country} number has {digits} digits',
+      example: 'For example: {number}',
     ),
     'fr': KaeliPhoneStrings(
       country: 'Pays',
@@ -64,6 +76,8 @@ class KaeliPhoneStrings {
       invalid: 'Numéro non valide',
       required: 'Saisissez un numéro de téléphone',
       countryLabel: 'Pays : {name}, +{dial}',
+      invalidLength: 'Un numéro ({country}) comporte {digits} chiffres',
+      example: 'Par exemple : {number}',
     ),
     'pt': KaeliPhoneStrings(
       country: 'País',
@@ -73,6 +87,8 @@ class KaeliPhoneStrings {
       invalid: 'Número inválido',
       required: 'Digite um número de telefone',
       countryLabel: 'País: {name}, +{dial}',
+      invalidLength: 'Um número de {country} tem {digits} dígitos',
+      example: 'Por exemplo: {number}',
     ),
   };
 
@@ -87,6 +103,8 @@ class KaeliPhoneStrings {
       invalid: overrides?.invalid ?? base.invalid,
       required: overrides?.required ?? base.required,
       countryLabel: overrides?.countryLabel ?? base.countryLabel,
+      invalidLength: overrides?.invalidLength ?? base.invalidLength,
+      example: overrides?.example ?? base.example,
     );
   }
 }
@@ -125,6 +143,7 @@ class KaeliPhoneField extends StatefulWidget {
     this.defaultCountry,
     this.preferredCountry,
     this.onCountryChanged,
+    this.showExample = true,
     this.pinnedCountries = const [],
     this.strings,
     this.focusNode,
@@ -163,6 +182,9 @@ class KaeliPhoneField extends StatefulWidget {
   /// (0.11.0). Sirve para llenar el país de la persona si está vacío.
   final ValueChanged<String>? onCountryChanged;
 
+  /// 0.12.0: ayuda «Por ejemplo: 8888 7777» con el ejemplo del país elegido, si [decoration] no trae `helperText`.
+  final bool showExample;
+
   /// Países fijos arriba de la lista (ISO, en este orden), p. ej. los más usados por la app.
   final List<String> pinnedCountries;
 
@@ -192,6 +214,11 @@ class _KaeliPhoneFieldState extends State<KaeliPhoneField> {
   late final TextEditingController _text;
   KaeliPhoneCountry? _country;
   String? _initialFieldValue;
+  FocusNode? _ownFocus;
+  FocusNode get _focus => widget.focusNode ?? (_ownFocus ??= FocusNode());
+
+  /// 0.12.0: el aviso del largo sale al salir del campo (o enseguida si ya se pasó de cifras), sin esperar a guardar.
+  var _showLive = false;
 
   @override
   void initState() {
@@ -199,7 +226,26 @@ class _KaeliPhoneFieldState extends State<KaeliPhoneField> {
     final split = kaeliSplitPhone(widget.initialValue);
     _country = split.country;
     _text = TextEditingController(text: split.country == null ? '' : split.national)..addListener(_onText);
+    _focus.addListener(_onFocus);
   }
+
+  void _onFocus() {
+    if (!_focus.hasFocus && _text.text.trim().isNotEmpty && !_showLive) setState(() => _showLive = true);
+  }
+
+  /// Aviso del largo mientras se escribe (null si está bien o todavía no toca mostrarlo).
+  String? get _liveError {
+    final c = _country;
+    if (c == null || _text.text.trim().isEmpty || _text.text.trim().startsWith('+')) return null;
+    final digits = kaeliNationalDigits(_text.text, c).length;
+    final tooLong = digits > c.max;
+    if (!tooLong && !_showLive) return null;
+    return kaeliToE164(_text.text, c) == null ? _lengthMessage(c) : null;
+  }
+
+  String _lengthMessage(KaeliPhoneCountry c) => (_texts.invalidLength ?? _texts.invalid!)
+      .replaceAll('{country}', c.name(_languageCode))
+      .replaceAll('{digits}', kaeliPhoneDigitsLabel(c));
 
   @override
   void didChangeDependencies() {
@@ -228,6 +274,8 @@ class _KaeliPhoneFieldState extends State<KaeliPhoneField> {
 
   @override
   void dispose() {
+    _focus.removeListener(_onFocus);
+    _ownFocus?.dispose();
     _text.dispose();
     super.dispose();
   }
@@ -277,7 +325,7 @@ class _KaeliPhoneFieldState extends State<KaeliPhoneField> {
   String? _validate(String? value) {
     final v = value ?? '';
     if (v.isEmpty) return widget.isRequired ? _texts.required : null;
-    if (v == _invalid) return _texts.invalid;
+    if (v == _invalid) return _lengthMessage(_country!);
     return widget.validator?.call(v);
   }
 
@@ -341,6 +389,8 @@ class _KaeliPhoneFieldState extends State<KaeliPhoneField> {
                     fillColor: d.fillColor,
                     isDense: d.isDense,
                     contentPadding: d.contentPadding,
+                    // Mismo alto que el número cuando este lleva ayuda debajo (0.12.0: el ejemplo del país).
+                    helperText: (d.helperText != null || widget.showExample) ? ' ' : null,
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -360,13 +410,23 @@ class _KaeliPhoneFieldState extends State<KaeliPhoneField> {
             child: TextField(
               key: KaeliPhoneField.numberKey,
               controller: _text,
-              focusNode: widget.focusNode,
+              focusNode: _focus,
               enabled: widget.enabled,
               keyboardType: TextInputType.phone,
               textInputAction: widget.textInputAction,
               autofillHints: const [AutofillHints.telephoneNumberNational],
-              inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9+()\-. ]'))],
-              decoration: d.copyWith(errorText: field.errorText),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9+()\-. ]')),
+                // 0.12.0: con los espacios del país mientras se escribe («8555 3333»).
+                _TypingFormatter(() => _country),
+              ],
+              decoration: d.copyWith(
+                errorText: field.errorText ?? _liveError,
+                // 0.12.0: un número de ejemplo del país elegido (si la app no puso su propia ayuda).
+                hintText: d.hintText ?? kaeliPhoneExample(country),
+                helperText: d.helperText ??
+                    (widget.showExample ? texts.example?.replaceAll('{number}', kaeliPhoneExample(country)) : null),
+              ),
             ),
           ),
         ],
@@ -452,3 +512,30 @@ class _CountrySheetState extends State<_CountrySheet> {
     );
   }
 }
+
+/// Pone los espacios del país mientras se escribe (no toca un número que empieza con «+» o «00»: ese lo separa el campo).
+class _TypingFormatter extends TextInputFormatter {
+  _TypingFormatter(this.country);
+
+  final KaeliPhoneCountry? Function() country;
+
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    final c = country();
+    final t = newValue.text.trimLeft();
+    if (c == null || t.startsWith('+') || t.startsWith('00')) return newValue;
+    final formatted = kaeliFormatTyping(newValue.text, c);
+    if (formatted == newValue.text) return newValue;
+    // El cursor queda después de la misma cantidad de cifras que tenía.
+    final before = newValue.text.substring(0, newValue.selection.end.clamp(0, newValue.text.length));
+    final digitsBefore = before.replaceAll(RegExp(r'\D'), '').length;
+    var pos = 0;
+    var seen = 0;
+    while (pos < formatted.length && seen < digitsBefore) {
+      if (RegExp(r'\d').hasMatch(formatted[pos])) seen++;
+      pos++;
+    }
+    return TextEditingValue(text: formatted, selection: TextSelection.collapsed(offset: pos));
+  }
+}
+

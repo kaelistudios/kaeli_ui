@@ -209,6 +209,44 @@ void main() {
       expect(lastCountry, 'MX', reason: 'avisa el cambio de país (0.11.0)');
     });
 
+    testWidgets('0.12.0: espacios del país al escribir y ejemplo del país debajo', (tester) async {
+      await pumpCR(tester);
+      expect(find.text('Por ejemplo: 8888 7777'), findsOneWidget);
+      await tester.enterText(find.byKey(KaeliPhoneField.numberKey), '85553');
+      await tester.pump();
+      expect(find.text('8555 3'), findsOneWidget);
+      await tester.enterText(find.byKey(KaeliPhoneField.numberKey), '85553333');
+      await tester.pump();
+      expect(find.text('8555 3333'), findsOneWidget);
+      expect(lastChanged, '+50685553333');
+    });
+
+    testWidgets('0.12.0: largo equivocado para el país: aviso debajo al salir del campo', (tester) async {
+      await pumpCR(tester);
+      await tester.tap(find.byKey(KaeliPhoneField.countryKey));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(KaeliPhoneField.searchKey), 'Colombia');
+      await tester.pump();
+      await tester.tap(find.byKey(KaeliPhoneField.countryTileKey('CO')));
+      await tester.pumpAndSettle();
+      expect(find.text('Por ejemplo: 888 887 7777'), findsOneWidget);
+      await tester.enterText(find.byKey(KaeliPhoneField.numberKey), '85553333');
+      await tester.pump();
+      expect(find.text('Un número de Colombia tiene 10 cifras'), findsNothing, reason: 'mientras escribe, todavía no');
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pumpAndSettle();
+      expect(find.text('Un número de Colombia tiene 10 cifras'), findsOneWidget);
+    });
+
+    test('kaeliFormatTyping y kaeliPhoneExample', () {
+      final cr = kaeliPhoneCountryOf('CR')!;
+      expect(kaeliFormatTyping('8555', cr), '8555');
+      expect(kaeliFormatTyping('85553', cr), '8555 3');
+      expect(kaeliFormatTyping('85553333', cr), '8555 3333');
+      expect(kaeliPhoneExample(cr), '8888 7777');
+      expect(kaeliFormatTyping('41555', kaeliPhoneCountryOf('US')!), '415 55');
+    });
+
     testWidgets('validación: largo y obligatorio, con KaeliForm y kaeliValidateForm', (tester) async {
       await pumpCR(tester, form: const _PhoneForm(defaultCountry: 'CR', isRequired: true));
       expect(find.byType(KaeliRequiredLabel), findsOneWidget);
@@ -220,10 +258,11 @@ void main() {
 
       await tester.enterText(find.byKey(KaeliPhoneField.numberKey), '608');
       await tester.pump();
-      expect(find.text('Número no válido'), findsOneWidget, reason: 'KaeliForm vuelve a revisar al escribir');
+      expect(find.text('Un número de Costa Rica tiene 8 cifras'), findsOneWidget, reason: 'KaeliForm vuelve a revisar al escribir');
       await tester.enterText(find.byKey(KaeliPhoneField.numberKey), '6089 5761');
-      await tester.pump();
-      expect(find.text('Número no válido'), findsNothing, reason: 'el error se quita al corregir');
+      // (Con ayuda debajo, el error se va con una animación corta.)
+      await tester.pumpAndSettle();
+      expect(find.text('Un número de Costa Rica tiene 8 cifras'), findsNothing, reason: 'el error se quita al corregir');
     });
 
     testWidgets('hoja de países: fijados arriba, buscar por nombre y por código, sin resultados', (tester) async {
@@ -280,10 +319,10 @@ void main() {
     });
 
     for (final (locale, country, search, invalid, label, name) in [
-      ('es', 'País', 'Buscar país o código', 'Número no válido', 'País: Alemania, +49', 'Alemania'),
-      ('en', 'Country', 'Search country or code', 'Invalid number', 'Country: Germany, +49', 'Germany'),
-      ('fr', 'Pays', 'Rechercher un pays ou un indicatif', 'Numéro non valide', 'Pays : Allemagne, +49', 'Allemagne'),
-      ('pt', 'País', 'Buscar país ou código', 'Número inválido', 'País: Alemanha, +49', 'Alemanha'),
+      ('es', 'País', 'Buscar país o código', 'Un número de Alemania tiene 7–12 cifras', 'País: Alemania, +49', 'Alemania'),
+      ('en', 'Country', 'Search country or code', 'A Germany number has 7–12 digits', 'Country: Germany, +49', 'Germany'),
+      ('fr', 'Pays', 'Rechercher un pays ou un indicatif', 'Un numéro (Allemagne) comporte 7–12 chiffres', 'Pays : Allemagne, +49', 'Allemagne'),
+      ('pt', 'País', 'Buscar país ou código', 'Um número de Alemanha tem 7–12 dígitos', 'País: Alemanha, +49', 'Alemanha'),
     ]) {
       testWidgets('textos y nombres de países en $locale', (tester) async {
         final handle = tester.ensureSemantics();
