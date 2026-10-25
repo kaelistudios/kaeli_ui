@@ -48,11 +48,30 @@ void main() {
     expect(ok2.onPressed, isNotNull);
   });
 
-  testWidgets('tocar «mes año» abre las ruedas', (tester) async {
+  testWidgets('0.13.0: tocar «mes año» cambia los días por las ruedas en la MISMA ventana; «Listo» vuelve al mes elegido',
+      (tester) async {
     await open(tester, initial: DateTime(2024, 3, 5), last: DateTime(2030));
     expect(find.text('Marzo 2024'), findsOneWidget);
     await tester.tap(find.byKey(KaeliDatePickerDialog.monthButtonKey));
     await tester.pumpAndSettle();
+    expect(find.byType(AlertDialog), findsOneWidget, reason: 'una sola ventana, sin hoja encima');
+    expect(find.byType(BottomSheet), findsNothing);
+    expect(find.text('Elige mes y año'), findsOneWidget);
     expect(find.byKey(KaeliMonthYearPicker.monthWheelKey), findsOneWidget);
+    expect(find.text('Aceptar'), findsNothing, reason: 'mientras, solo «Cancelar» y «Listo»');
+    final month = find.byKey(KaeliMonthYearPicker.monthWheelKey);
+    final extent = tester.getSize(month).height / 5;
+    await tester.drag(month, Offset(0, -extent * 2));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(KaeliMonthYearPicker.doneKey));
+    await tester.pumpAndSettle();
+    expect(find.text('Mayo 2024'), findsOneWidget);
+    expect(find.text('Aceptar'), findsOneWidget, reason: 'vuelven los días y sus botones');
+    // «Cancelar» de las ruedas vuelve a los días sin cambiar el mes.
+    await tester.tap(find.byKey(KaeliDatePickerDialog.monthButtonKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(KaeliMonthYearPicker.cancelKey));
+    await tester.pumpAndSettle();
+    expect(find.text('Mayo 2024'), findsOneWidget);
   });
 }

@@ -64,16 +64,10 @@ class _KaeliDatePickerDialogState extends State<KaeliDatePickerDialog> {
 
   bool _enabled(DateTime d) => !d.isBefore(_day(widget.first)) && !d.isAfter(_day(widget.last));
 
-  Future<void> _pickMonth() async {
-    final m = await showKaeliMonthYearPicker(
-      context,
-      initial: _month,
-      first: widget.first,
-      last: widget.last,
-      strings: widget.strings,
-    );
-    if (m != null) setState(() => _month = _clampMonth(m));
-  }
+  /// 0.13.0: las ruedas de mes y año reemplazan los días en la MISMA ventana (antes se abría otra hoja encima).
+  var _choosingMonth = false;
+
+  void _pickMonth() => setState(() => _choosingMonth = true);
 
   @override
   Widget build(BuildContext context) {
@@ -125,6 +119,28 @@ class _KaeliDatePickerDialogState extends State<KaeliDatePickerDialog> {
                     : colors.onSurface.withValues(alpha: 0.38),
               ),
             ),
+          ),
+        ),
+      );
+    }
+
+    if (_choosingMonth) {
+      return AlertDialog(
+        title: Text(texts.monthYearTitle),
+        contentPadding: const EdgeInsetsDirectional.fromSTEB(24, 12, 16, 8),
+        content: SizedBox(
+          width: 340,
+          child: KaeliMonthYearPicker(
+            initial: _month,
+            first: widget.first,
+            last: widget.last,
+            strings: widget.strings,
+            showTitle: false,
+            onCancel: () => setState(() => _choosingMonth = false),
+            onConfirm: (m) => setState(() {
+              _month = _clampMonth(m);
+              _choosingMonth = false;
+            }),
           ),
         ),
       );

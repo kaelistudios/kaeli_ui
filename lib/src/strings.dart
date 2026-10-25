@@ -25,6 +25,8 @@ class KaeliUiStrings {
     this.cancel,
     this.confirm,
     this.required,
+    this.monthYearTitle,
+    this.monthYearDone,
   });
 
   /// Botón de la barra sobre el teclado de iPhone («Listo»).
@@ -51,6 +53,12 @@ class KaeliUiStrings {
   /// Lo que lee el lector de pantalla después de un campo con asterisco («obligatorio»).
   final String? required;
 
+  /// 0.13.0: título del selector de mes y año («Elige mes y año»).
+  final String? monthYearTitle;
+
+  /// 0.13.0: botón que confirma el mes y el año («Listo»).
+  final String? monthYearDone;
+
   /// Textos incluidos, por código de idioma.
   static const Map<String, KaeliUiStrings> builtIn = {
     'es': KaeliUiStrings(
@@ -62,6 +70,8 @@ class KaeliUiStrings {
       cancel: 'Cancelar',
       confirm: 'Aceptar',
       required: 'obligatorio',
+      monthYearTitle: "Elige mes y año",
+      monthYearDone: 'Listo',
     ),
     'en': KaeliUiStrings(
       done: 'Done',
@@ -72,6 +82,8 @@ class KaeliUiStrings {
       cancel: 'Cancel',
       confirm: 'OK',
       required: 'required',
+      monthYearTitle: "Choose month and year",
+      monthYearDone: 'Done',
     ),
     'fr': KaeliUiStrings(
       done: 'OK',
@@ -82,6 +94,8 @@ class KaeliUiStrings {
       cancel: 'Annuler',
       confirm: 'Valider',
       required: 'obligatoire',
+      monthYearTitle: "Choisissez le mois et l'année",
+      monthYearDone: 'OK',
     ),
     'pt': KaeliUiStrings(
       done: 'OK',
@@ -92,6 +106,8 @@ class KaeliUiStrings {
       cancel: 'Cancelar',
       confirm: 'Confirmar',
       required: 'obrigatório',
+      monthYearTitle: "Escolha o mês e o ano",
+      monthYearDone: 'Pronto',
     ),
   };
 
@@ -107,6 +123,8 @@ class KaeliUiStrings {
       cancel: overrides?.cancel ?? base.cancel!,
       confirm: overrides?.confirm ?? base.confirm!,
       required: overrides?.required ?? base.required!,
+      monthYearTitle: overrides?.monthYearTitle ?? base.monthYearTitle!,
+      monthYearDone: overrides?.monthYearDone ?? base.monthYearDone!,
     );
   }
 
@@ -122,6 +140,8 @@ class KaeliUiStrings {
           cancel: other.cancel ?? cancel,
           confirm: other.confirm ?? confirm,
           required: other.required ?? required,
+          monthYearTitle: other.monthYearTitle ?? monthYearTitle,
+          monthYearDone: other.monthYearDone ?? monthYearDone,
         );
 }
 
@@ -137,6 +157,8 @@ class KaeliUiTexts {
     required this.cancel,
     required this.confirm,
     required this.required,
+    required this.monthYearTitle,
+    required this.monthYearDone,
   });
 
   final String done;
@@ -147,6 +169,8 @@ class KaeliUiTexts {
   final String cancel;
   final String confirm;
   final String required;
+  final String monthYearTitle;
+  final String monthYearDone;
 
   /// Textos para [context]: idioma de `Localizations`, cambios de [KaeliKeyboard] y, encima, [overrides].
   static KaeliUiTexts of(BuildContext context, [KaeliUiStrings? overrides]) {

@@ -34,19 +34,22 @@ Future<DateTime?> showKaeliMonthYearPicker(
   context: context,
   useSafeArea: true,
   showDragHandle: false,
-  builder: (context) => KaeliMonthYearPicker(
-    initial: initial,
-    first: first,
-    last: last,
-    title: title,
-    monthNames: monthNames,
-    strings: strings,
-    onCancel: () => Navigator.of(context).pop(),
-    onConfirm: (month) => Navigator.of(context).pop(month),
+  // 0.13.0: hoja corta, del alto justo (título, ruedas y botones).
+  builder: (context) => Padding(
+    padding: const EdgeInsetsDirectional.fromSTEB(24, 20, 16, 8),
+    child: KaeliMonthYearPicker(
+      initial: initial,
+      first: first,
+      last: last,
+      title: title,
+      monthNames: monthNames,
+      strings: strings,
+      onCancel: () => Navigator.of(context).pop(),
+      onConfirm: (month) => Navigator.of(context).pop(month),
+    ),
   ),
 );
 
-/// Contenido de [showKaeliMonthYearPicker], por si se quiere poner en otro lugar.
 class KaeliMonthYearPicker extends StatefulWidget {
   const KaeliMonthYearPicker({
     super.key,
@@ -58,7 +61,11 @@ class KaeliMonthYearPicker extends StatefulWidget {
     this.strings,
     required this.onCancel,
     required this.onConfirm,
+    this.showTitle = true,
   });
+
+  /// 0.13.0: el título «Elige mes y año» arriba (false si ya lo pone el diálogo que lo contiene).
+  final bool showTitle;
 
   final DateTime initial;
   final DateTime? first;
@@ -72,6 +79,8 @@ class KaeliMonthYearPicker extends StatefulWidget {
   /// Llaves de las ruedas (pruebas).
   static const monthWheelKey = Key('kaeli-month-wheel');
   static const yearWheelKey = Key('kaeli-year-wheel');
+  static const cancelKey = Key('kaeli-month-year-cancel');
+  static const doneKey = Key('kaeli-month-year-done');
 
   /// Rango por defecto: de 5 años atrás a 10 adelante de [now], estirado para incluir [initial].
   static (DateTime, DateTime) defaultRange(DateTime initial, DateTime now, {DateTime? first, DateTime? last}) {
@@ -147,9 +156,11 @@ class _KaeliMonthYearPickerState extends State<KaeliMonthYearPicker> {
     final texts = KaeliUiTexts.of(context, widget.strings);
     final names = widget.monthNames ?? KaeliMonthYearPicker.monthNamesFor(Localizations.localeOf(context));
     final scaler = MediaQuery.textScalerOf(context);
-    final style = (theme.textTheme.titleMedium ?? const TextStyle()).copyWith(color: colors.onSurface);
-    final itemExtent = scaler.scale((style.fontSize ?? 16) * 2.2);
+    // 0.13.0: la misma letra que el resto del diálogo (los días), 5 opciones visibles y ruedas del mismo alto.
+    final style = (theme.textTheme.bodyLarge ?? const TextStyle()).copyWith(color: colors.onSurface);
+    final itemExtent = scaler.scale((style.fontSize ?? 16) * 2.1);
     final overlay = CupertinoPickerDefaultSelectionOverlay(background: colors.primary.withValues(alpha: 0.12));
+    final titleStyle = theme.dialogTheme.titleTextStyle ?? theme.textTheme.titleLarge;
 
     Widget wheel({
       required Key key,
@@ -174,67 +185,68 @@ class _KaeliMonthYearPickerState extends State<KaeliMonthYearPicker> {
       ),
     );
 
-    return SafeArea(
-      top: false,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (widget.showTitle)
           Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(4, 4, 4, 0),
+            padding: const EdgeInsetsDirectional.only(bottom: 12),
+            child: Text(widget.title ?? texts.monthYearTitle, style: titleStyle),
+          ),
+        SizedBox(
+          height: itemExtent * 5,
+          child: DefaultTextStyle(
+            style: style,
             child: Row(
               children: [
-                IconButton(icon: const Icon(Icons.close), tooltip: texts.cancel, onPressed: widget.onCancel),
                 Expanded(
-                  child: Text(
-                    widget.title ?? '',
-                    style: theme.textTheme.titleMedium?.copyWith(color: colors.onSurface),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
+                  flex: 5,
+                  child: wheel(
+                    key: KaeliMonthYearPicker.monthWheelKey,
+                    controller: _months,
+                    count: 12,
+                    label: (i) => names[i],
+                    onChanged: (i) => _month = i + 1,
+                    semantics: names[_month - 1],
                   ),
                 ),
-                IconButton(
-                  icon: Icon(Icons.check, color: colors.primary),
-                  tooltip: texts.confirm,
-                  onPressed: () => widget.onConfirm(_value),
+                Expanded(
+                  flex: 4,
+                  child: wheel(
+                    key: KaeliMonthYearPicker.yearWheelKey,
+                    controller: _years,
+                    count: _last.year - _first.year + 1,
+                    label: (i) => '${_first.year + i}',
+                    onChanged: (i) => _year = _first.year + i,
+                    semantics: '$_year',
+                  ),
                 ),
               ],
             ),
           ),
-          SizedBox(
-            height: itemExtent * 5,
-            child: DefaultTextStyle(
-              style: style,
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: wheel(
-                      key: KaeliMonthYearPicker.monthWheelKey,
-                      controller: _months,
-                      count: 12,
-                      label: (i) => names[i],
-                      onChanged: (i) => _month = i + 1,
-                      semantics: names[_month - 1],
-                    ),
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: wheel(
-                      key: KaeliMonthYearPicker.yearWheelKey,
-                      controller: _years,
-                      count: _last.year - _first.year + 1,
-                      label: (i) => '${_first.year + i}',
-                      onChanged: (i) => _year = _first.year + i,
-                      semantics: '$_year',
-                    ),
-                  ),
-                ],
+        ),
+        // Botones de texto como los de los demás diálogos (0.13.0: antes eran ✕ y ✓).
+        Padding(
+          padding: const EdgeInsetsDirectional.only(top: 8),
+          child: OverflowBar(
+            alignment: MainAxisAlignment.end,
+            spacing: 8,
+            children: [
+              TextButton(
+                key: KaeliMonthYearPicker.cancelKey,
+                onPressed: widget.onCancel,
+                child: Text(texts.cancel),
               ),
-            ),
+              TextButton(
+                key: KaeliMonthYearPicker.doneKey,
+                onPressed: () => widget.onConfirm(_value),
+                child: Text(texts.monthYearDone),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

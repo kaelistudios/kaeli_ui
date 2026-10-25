@@ -1,4 +1,4 @@
-// KaeliMonthYearPicker: ruedas de mes y año, ✕ y ✓, meses en el idioma de la app y rango.
+// KaeliMonthYearPicker: ruedas de mes y año, «Cancelar» y «Listo» (0.13.0), meses en el idioma de la app y rango.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kaeli_ui/kaeli_ui.dart';
@@ -64,11 +64,28 @@ void main() {
     await _open(tester, _Host(initial: DateTime(2026, 10, 23)));
     expect(find.text('Octubre'), findsOneWidget);
     expect(find.text('2026'), findsOneWidget);
-    expect(find.byTooltip('Cancelar'), findsOneWidget);
-    expect(find.byTooltip('Aceptar'), findsOneWidget);
+    // 0.13.0: título y botones de texto (no ✕ y ✓).
+    expect(find.text('Mes'), findsOneWidget, reason: 'título propio');
+    expect(find.text('Cancelar'), findsOneWidget);
+    expect(find.text('Listo'), findsOneWidget);
+    expect(find.byIcon(Icons.check), findsNothing);
   });
 
-  testWidgets('girar las ruedas y ✓ devuelve el primer día del mes elegido', (tester) async {
+  testWidgets('sin título propio: «Elige mes y año»; 5 opciones visibles y ruedas del mismo alto', (tester) async {
+    await pumpKaeliApp(
+      tester,
+      Scaffold(
+        body: KaeliMonthYearPicker(initial: DateTime(2026, 10), onCancel: () {}, onConfirm: (_) {}),
+      ),
+    );
+    expect(find.text('Elige mes y año'), findsOneWidget);
+    final m = tester.getSize(find.byKey(KaeliMonthYearPicker.monthWheelKey));
+    final y = tester.getSize(find.byKey(KaeliMonthYearPicker.yearWheelKey));
+    expect(m.height, y.height);
+    expect(m.width / y.width, closeTo(5 / 4, 0.05));
+  });
+
+  testWidgets('girar las ruedas y «Listo» devuelve el primer día del mes elegido', (tester) async {
     await _open(tester, _Host(initial: DateTime(2026, 10, 23)));
     final month = find.byKey(KaeliMonthYearPicker.monthWheelKey);
     final year = find.byKey(KaeliMonthYearPicker.yearWheelKey);
@@ -77,14 +94,14 @@ void main() {
     await tester.pumpAndSettle();
     await tester.drag(year, Offset(0, -extent));
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Aceptar'));
+    await tester.tap(find.byKey(KaeliMonthYearPicker.doneKey));
     await tester.pumpAndSettle();
     expect(_result(tester), '2027-8');
   });
 
-  testWidgets('✕ cierra sin elegir', (tester) async {
+  testWidgets('«Cancelar» cierra sin elegir', (tester) async {
     await _open(tester, _Host(initial: DateTime(2026, 10)));
-    await tester.tap(find.byTooltip('Cancelar'));
+    await tester.tap(find.byKey(KaeliMonthYearPicker.cancelKey));
     await tester.pumpAndSettle();
     expect(_result(tester), 'nada');
   });
@@ -95,7 +112,7 @@ void main() {
     final extent = tester.getSize(month).height / 5;
     await tester.drag(month, Offset(0, extent * 5));
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Aceptar'));
+    await tester.tap(find.byKey(KaeliMonthYearPicker.doneKey));
     await tester.pumpAndSettle();
     expect(_result(tester), '2026-9');
   });
@@ -108,7 +125,7 @@ void main() {
     testWidgets('meses y botones en $code', (tester) async {
       await _open(tester, _Host(initial: DateTime(2026, 10)), locale: Locale(code));
       expect(find.text(october), findsOneWidget);
-      expect(find.byTooltip(cancel), findsOneWidget);
+      expect(find.text(cancel), findsOneWidget);
     });
   }
 

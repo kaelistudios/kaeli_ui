@@ -1,5 +1,16 @@
 # Cambios
 
+## 0.13.0 (25 oct 2026)
+
+- Selector de mes y año más claro y compacto: título «Elige mes y año» (`KaeliUiStrings.monthYearTitle`), botones de
+  texto «Cancelar» y «Listo» (`monthYearDone`) en vez de ✕ y ✓, 5 opciones visibles, ruedas del mismo alto (mes 5 :
+  año 4), la misma letra que el resto del diálogo y sin espacio vacío.
+- `showKaeliDatePicker`: al tocar «octubre 2026», las ruedas reemplazan los días en la MISMA ventana (antes se abría
+  una hoja encima del calendario oscurecido); «Listo» vuelve a los días del mes elegido y «Cancelar» a los de antes.
+- `showKaeliMonthYearPicker` solo (p. ej. el título de un calendario): hoja corta con el mismo título y botones.
+- `KaeliMonthYearPicker.cancelKey` / `doneKey` para las pruebas; `showTitle`. Sin cambios que rompan en la API (las
+  pruebas que tocaban los ✕ ✓ por su tooltip tienen que usar las claves nuevas).
+
 ## 0.12.0 (25 oct 2026)
 
 - `KaeliPhoneField`: el número sale con los espacios del país mientras se escribe («8555 3333»,
