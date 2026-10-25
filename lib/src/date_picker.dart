@@ -10,6 +10,8 @@ import 'strings.dart';
 /// - [initial]: el día marcado; si es null, se abre en [openAt] (p. ej. unos años atrás para una fecha de nacimiento)
 ///   o en hoy, sin marcar ninguno.
 /// - [first] y [last] limitan los días que se pueden elegir (p. ej. `last: hoy` para no aceptar fechas futuras).
+/// - [firstDayOfWeek] (0.14.0): la semana empieza en lunes en todos los idiomas (`DateTime.monday`, por defecto);
+///   `DateTime.sunday` la empieza en domingo. Antes seguía al idioma (en inglés de EE. UU., domingo).
 Future<DateTime?> showKaeliDatePicker(
   BuildContext context, {
   DateTime? initial,
@@ -18,10 +20,18 @@ Future<DateTime?> showKaeliDatePicker(
   required DateTime last,
   String? title,
   KaeliUiStrings? strings,
+  int firstDayOfWeek = DateTime.monday,
 }) => showDialog<DateTime>(
   context: context,
-  builder: (context) =>
-      KaeliDatePickerDialog(initial: initial, openAt: openAt, first: first, last: last, title: title, strings: strings),
+  builder: (context) => KaeliDatePickerDialog(
+    initial: initial,
+    openAt: openAt,
+    first: first,
+    last: last,
+    title: title,
+    strings: strings,
+    firstDayOfWeek: firstDayOfWeek,
+  ),
 );
 
 class KaeliDatePickerDialog extends StatefulWidget {
@@ -33,6 +43,7 @@ class KaeliDatePickerDialog extends StatefulWidget {
     required this.last,
     this.title,
     this.strings,
+    this.firstDayOfWeek = DateTime.monday,
   });
 
   final DateTime? initial;
@@ -41,6 +52,9 @@ class KaeliDatePickerDialog extends StatefulWidget {
   final DateTime last;
   final String? title;
   final KaeliUiStrings? strings;
+
+  /// Primer día de la semana (`DateTime.monday` … `DateTime.sunday`); lunes por defecto.
+  final int firstDayOfWeek;
 
   /// Llave del botón «mes año ▾» (pruebas).
   static const monthButtonKey = Key('kaeli-date-month');
@@ -80,9 +94,9 @@ class _KaeliDatePickerDialogState extends State<KaeliDatePickerDialog> {
     final canBack = _month.isAfter(_monthOf(widget.first));
     final canNext = _month.isBefore(_monthOf(widget.last));
 
-    // Días de la semana desde el primero del idioma (lunes en español).
-    final firstWeekday = material.firstDayOfWeekIndex; // 0 = domingo
-    final narrow = material.narrowWeekdays;
+    // Días de la semana desde [firstDayOfWeek] (lunes por defecto, en todos los idiomas).
+    final firstWeekday = widget.firstDayOfWeek % 7; // 0 = domingo
+    final narrow = kaeliNarrowWeekdays(material, locale);
     final lead = (DateTime(_month.year, _month.month).weekday % 7 - firstWeekday) % 7;
     final days = DateUtils.getDaysInMonth(_month.year, _month.month);
     final today = _day(DateTime.now());
@@ -218,4 +232,12 @@ class _KaeliDatePickerDialogState extends State<KaeliDatePickerDialog> {
       ],
     );
   }
+}
+
+/// Iniciales de los días (de domingo a sábado) en el idioma; en español, «X» para el miércoles (en «es-US» o
+/// «es-419», martes y miércoles salían los dos «M»).
+List<String> kaeliNarrowWeekdays(MaterialLocalizations material, Locale locale) {
+  final narrow = [...material.narrowWeekdays];
+  if (locale.languageCode == 'es') narrow[3] = 'X';
+  return narrow;
 }

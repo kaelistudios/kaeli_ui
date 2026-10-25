@@ -74,4 +74,41 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Mayo 2024'), findsOneWidget);
   });
+
+  // 0.14.0: la semana empieza en lunes en todos los idiomas; en español, «X» para el miércoles.
+  Future<List<String>> weekdayRow(WidgetTester tester, Locale locale, {int? firstDayOfWeek}) async {
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: locale,
+        supportedLocales: [locale],
+        localizationsDelegates: GlobalMaterialLocalizations.delegates,
+        home: Builder(
+          builder: (context) => TextButton(
+            onPressed: () => firstDayOfWeek == null
+                ? showKaeliDatePicker(context, openAt: DateTime(2026, 10, 1), first: DateTime(2026), last: DateTime(2027))
+                : showKaeliDatePicker(
+                    context,
+                    openAt: DateTime(2026, 10, 1),
+                    first: DateTime(2026),
+                    last: DateTime(2027),
+                    firstDayOfWeek: firstDayOfWeek,
+                  ),
+            child: const Text('abrir'),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('abrir'));
+    await tester.pumpAndSettle();
+    final grid = find.byType(GridView);
+    final texts = tester.widgetList<Text>(find.descendant(of: grid, matching: find.byType(Text))).take(7);
+    return [for (final t in texts) t.data!];
+  }
+
+  testWidgets('0.14.0: lunes primero en español (con «X») y en inglés; domingo si se pide', (tester) async {
+    expect(await weekdayRow(tester, const Locale('es', 'US')), ['L', 'M', 'X', 'J', 'V', 'S', 'D']);
+    expect(await weekdayRow(tester, const Locale('en', 'US')), ['M', 'T', 'W', 'T', 'F', 'S', 'S']);
+    expect(await weekdayRow(tester, const Locale('en', 'US'), firstDayOfWeek: DateTime.sunday), ['S', 'M', 'T', 'W', 'T', 'F', 'S']);
+  });
 }

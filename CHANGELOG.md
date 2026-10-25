@@ -1,5 +1,13 @@
 # Cambios
 
+## 0.14.0 (25 oct 2026)
+
+- `showKaeliDatePicker` / `KaeliDatePickerDialog`: la semana empieza en LUNES en todos los idiomas (antes seguía al
+  idioma: en inglés de EE. UU. empezaba en domingo). Nuevo `firstDayOfWeek` (`DateTime.monday` por defecto;
+  `DateTime.sunday` para empezar en domingo).
+- En español, «X» para el miércoles en todas las variantes (en «es-US» o «es-419» martes y miércoles salían «M»):
+  `kaeliNarrowWeekdays`.
+
 ## 0.13.1 (25 oct 2026)
 
 - Selector de mes y año: la hoja sale encima de todo (también de la barra de pestañas) y las ruedas muestran 5
