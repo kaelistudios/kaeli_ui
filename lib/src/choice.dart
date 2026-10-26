@@ -4,8 +4,11 @@ import 'package:flutter/material.dart';
 /// - [cards]: tarjetas con ícono, para cosas con identidad propia (especialidades, tipos de cita, lugares, consultorios).
 /// - [list]: lista agrupada con círculo, para valores simples (horas, minutos, estados, filtros, idioma, tema).
 /// - [segmented]: 2 o 3 opciones cortas.
+/// - [grid] (0.17.0): cuadrícula de botones iguales (3 columnas por defecto, [KaeliChoice.columns]) para muchas
+///   opciones cortas, como el título (Lic. · Licda. · Dr. …; Sesly #142). La elegida se llena con `primary`, sin ✓ y
+///   sin cambiar de tamaño.
 /// - [auto]: segmentado si son 2 o 3 cortas; si no, [list].
-enum KaeliChoiceLayout { auto, segmented, list, cards }
+enum KaeliChoiceLayout { auto, segmented, list, cards, grid }
 
 /// Una opción de [KaeliChoice] o [KaeliMultiChoice].
 @immutable
@@ -66,9 +69,13 @@ class KaeliChoice<T> extends StatelessWidget {
     this.shortLabel = 14,
     this.layout = KaeliChoiceLayout.auto,
     this.other,
+    this.columns = 3,
   });
 
   final KaeliChoiceLayout layout;
+
+  /// Columnas de [KaeliChoiceLayout.grid]. Si una palabra no cabe entera (letra grande), usa menos.
+  final int columns;
 
   /// Lo elegido; null si no hay nada elegido (o si está elegida [other]).
   final T? value;
@@ -109,6 +116,7 @@ class KaeliChoice<T> extends StatelessWidget {
             wordsFitSegments(context, options, constraints.maxWidth) ? _segments(context) : _list(context),
       ),
       KaeliChoiceLayout.cards => _cards(context),
+      KaeliChoiceLayout.grid => LayoutBuilder(builder: (context, c) => _grid(context, c.maxWidth)),
       _ => _list(context),
     };
     if (label == null) return body;
@@ -172,6 +180,81 @@ class KaeliChoice<T> extends StatelessWidget {
             },
     ),
   );
+
+  /// Cuántas columnas caben sin cortar una palabra (de [columns] hacia abajo, nunca menos de 1).
+  static int gridColumns(BuildContext context, List<String> labels, double width, {int columns = 3}) {
+    if (!width.isFinite) return columns;
+    final style = Theme.of(context).textTheme.labelLarge;
+    final scaler = MediaQuery.textScalerOf(context);
+    double widest = 0;
+    for (final label in labels) {
+      for (final word in label.split(RegExp(r'\s+'))) {
+        final painter = TextPainter(
+          text: TextSpan(text: word, style: style),
+          textDirection: Directionality.of(context),
+          textScaler: scaler,
+          maxLines: 1,
+        )..layout();
+        if (painter.width > widest) widest = painter.width;
+        painter.dispose();
+      }
+    }
+    var cols = columns;
+    // Cada celda: su parte del ancho menos el espacio entre celdas y el relleno de adentro.
+    while (cols > 1 && (width - (cols - 1) * _gridGap) / cols - 2 * _gridPadding < widest) {
+      cols--;
+    }
+    return cols;
+  }
+
+  static const double _gridGap = 8;
+  static const double _gridPadding = 8;
+
+  Widget _grid(BuildContext context, double width) {
+    final otherSelected = other?.selected ?? false;
+    final cells = <Widget>[
+      for (final o in options)
+        KaeliChoiceTile(
+          key: o.key,
+          label: o.label,
+          selected: !otherSelected && o.value == value,
+          onTap: onChanged == null ? null : () => onChanged!(o.value),
+        ),
+      if (other case final other?)
+        KaeliChoiceTile(label: other.label, selected: other.selected, onTap: other.onSelected),
+    ];
+    final cols = gridColumns(
+      context,
+      [for (final o in options) o.label, if (other != null) other!.label],
+      width,
+      columns: columns,
+    );
+    final rows = <Widget>[];
+    for (var i = 0; i < cells.length; i += cols) {
+      if (i > 0) rows.add(const SizedBox(height: _gridGap));
+      rows.add(
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (var j = 0; j < cols; j++) ...[
+                if (j > 0) const SizedBox(width: _gridGap),
+                Expanded(child: i + j < cells.length ? cells[i + j] : const SizedBox.shrink()),
+              ],
+            ],
+          ),
+        ),
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ...rows,
+        if (other case final other? when other.selected)
+          Padding(padding: const EdgeInsets.only(top: 8), child: other.field),
+      ],
+    );
+  }
 
   Widget _cards(BuildContext context) {
     final otherSelected = other?.selected ?? false;
@@ -406,6 +489,55 @@ class KaeliChoiceCard extends StatelessWidget {
       label: [label, ?subtitle].join(', '),
       excludeSemantics: true,
       child: card,
+    );
+  }
+}
+
+/// Un botón de la cuadrícula ([KaeliChoiceLayout.grid]): texto centrado, borde fino; el elegido se llena con
+/// `primary` (texto `onPrimary`), sin ✓ y sin cambiar de tamaño (el borde mide lo mismo elegido o no). Alto mínimo 48
+/// y crece con la letra.
+class KaeliChoiceTile extends StatelessWidget {
+  const KaeliChoiceTile({super.key, required this.label, required this.selected, this.onTap});
+
+  final String label;
+  final bool selected;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    final radius = BorderRadius.circular(12);
+    return Semantics(
+      button: true,
+      inMutuallyExclusiveGroup: true,
+      checked: selected,
+      label: label,
+      excludeSemantics: true,
+      child: Material(
+        color: selected ? colors.primary : colors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: radius,
+          side: BorderSide(color: selected ? colors.primary : colors.outlineVariant, width: 1.5),
+        ),
+        child: InkWell(
+          borderRadius: radius,
+          onTap: onTap,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 48),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+              child: Center(
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: text.labelLarge?.copyWith(color: selected ? colors.onPrimary : colors.onSurface),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

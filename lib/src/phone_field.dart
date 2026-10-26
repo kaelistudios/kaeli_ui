@@ -424,7 +424,8 @@ class _KaeliPhoneFieldState extends State<KaeliPhoneField> {
                 errorText: field.errorText ?? _liveError,
                 // 0.12.0: un número de ejemplo del país elegido (si la app no puso su propia ayuda).
                 hintText: d.hintText ?? kaeliPhoneExample(country),
-                helperText: d.helperText ??
+                helperText:
+                    d.helperText ??
                     (widget.showExample ? texts.example?.replaceAll('{number}', kaeliPhoneExample(country)) : null),
               ),
             ),
@@ -535,7 +536,9 @@ class _TypingFormatter extends TextInputFormatter {
       if (RegExp(r'\d').hasMatch(formatted[pos])) seen++;
       pos++;
     }
-    return TextEditingValue(text: formatted, selection: TextSelection.collapsed(offset: pos));
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: pos),
+    );
   }
 }
-

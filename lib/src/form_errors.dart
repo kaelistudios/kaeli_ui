@@ -105,7 +105,12 @@ void kaeliRevealFirstError(BuildContext context) {
   // enfocar (0.15.0): el enfoque hace su propio desplazamiento mínimo y dejaba el campo pegado abajo.
   void reveal() {
     if (field.mounted) {
-      Scrollable.ensureVisible(field, alignment: 0.15, duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
+      Scrollable.ensureVisible(
+        field,
+        alignment: 0.15,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+      );
     }
   }
 

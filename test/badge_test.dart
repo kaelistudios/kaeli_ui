@@ -14,8 +14,10 @@ class _Fake extends KaeliBadgePlatform {
   Future<void> clearDelivered() async => calls.add('clear');
 }
 
-Widget _app(int unread, {bool enabled = true}) =>
-    Directionality(textDirection: TextDirection.ltr, child: KaeliBadgeSync(unread: unread, enabled: enabled, child: const SizedBox()));
+Widget _app(int unread, {bool enabled = true}) => Directionality(
+  textDirection: TextDirection.ltr,
+  child: KaeliBadgeSync(unread: unread, enabled: enabled, child: const SizedBox()),
+);
 
 void main() {
   late _Fake fake;

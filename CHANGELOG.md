@@ -1,5 +1,15 @@
 # Cambios
 
+## 0.17.0 (26 oct 2026)
+
+Pedido en Sesly #142 (título del perfil). Sin cambios que rompan en la API.
+
+- `KaeliChoiceLayout.grid`: cuadrícula de botones iguales para muchas opciones cortas (3 columnas por defecto,
+  `KaeliChoice.columns`). La elegida se llena con `primary` (texto `onPrimary`), sin ✓ y sin cambiar de tamaño; todas
+  las de una fila tienen el mismo alto y crecen con la letra. Si una palabra no cabe entera (letra al 200 % en pantalla
+  pequeña), usa menos columnas (`KaeliChoice.gridColumns`). «Otro» (`KaeliChoiceOther`) va como una celda más y su campo
+  sale debajo. `KaeliChoiceTile` es la celda suelta.
+
 ## 0.16.0 (25 oct 2026)
 
 Pedido en la prueba de Blunkoo 1.0.0 (11) en iPhone. Sin cambios que rompan en la API.

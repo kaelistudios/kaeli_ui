@@ -144,7 +144,9 @@ void main() {
       expect(dialText('+52'), findsOneWidget);
     });
 
-    testWidgets('número nuevo con preferredCountry (el del negocio): ese, antes que la región (0.11.0)', (tester) async {
+    testWidgets('número nuevo con preferredCountry (el del negocio): ese, antes que la región (0.11.0)', (
+      tester,
+    ) async {
       tester.platformDispatcher.localesTestValue = const [Locale('es', 'MX')];
       addTearDown(tester.platformDispatcher.clearLocalesTestValue);
       await pumpKaeliApp(tester, const _PhoneForm(preferredCountry: 'CR', defaultCountry: 'US'));
@@ -258,11 +260,19 @@ void main() {
 
       await tester.enterText(find.byKey(KaeliPhoneField.numberKey), '608');
       await tester.pump();
-      expect(find.text('Un número de Costa Rica tiene 8 cifras'), findsOneWidget, reason: 'KaeliForm vuelve a revisar al escribir');
+      expect(
+        find.text('Un número de Costa Rica tiene 8 cifras'),
+        findsOneWidget,
+        reason: 'KaeliForm vuelve a revisar al escribir',
+      );
       await tester.enterText(find.byKey(KaeliPhoneField.numberKey), '6089 5761');
       // (Con ayuda debajo, el error se va con una animación corta.)
       await tester.pumpAndSettle();
-      expect(find.text('Un número de Costa Rica tiene 8 cifras'), findsNothing, reason: 'el error se quita al corregir');
+      expect(
+        find.text('Un número de Costa Rica tiene 8 cifras'),
+        findsNothing,
+        reason: 'el error se quita al corregir',
+      );
     });
 
     testWidgets('hoja de países: fijados arriba, buscar por nombre y por código, sin resultados', (tester) async {
@@ -319,10 +329,38 @@ void main() {
     });
 
     for (final (locale, country, search, invalid, label, name) in [
-      ('es', 'País', 'Buscar país o código', 'Un número de Alemania tiene 7–12 cifras', 'País: Alemania, +49', 'Alemania'),
-      ('en', 'Country', 'Search country or code', 'A Germany number has 7–12 digits', 'Country: Germany, +49', 'Germany'),
-      ('fr', 'Pays', 'Rechercher un pays ou un indicatif', 'Un numéro (Allemagne) comporte 7–12 chiffres', 'Pays : Allemagne, +49', 'Allemagne'),
-      ('pt', 'País', 'Buscar país ou código', 'Um número de Alemanha tem 7–12 dígitos', 'País: Alemanha, +49', 'Alemanha'),
+      (
+        'es',
+        'País',
+        'Buscar país o código',
+        'Un número de Alemania tiene 7–12 cifras',
+        'País: Alemania, +49',
+        'Alemania',
+      ),
+      (
+        'en',
+        'Country',
+        'Search country or code',
+        'A Germany number has 7–12 digits',
+        'Country: Germany, +49',
+        'Germany',
+      ),
+      (
+        'fr',
+        'Pays',
+        'Rechercher un pays ou un indicatif',
+        'Un numéro (Allemagne) comporte 7–12 chiffres',
+        'Pays : Allemagne, +49',
+        'Allemagne',
+      ),
+      (
+        'pt',
+        'País',
+        'Buscar país ou código',
+        'Um número de Alemanha tem 7–12 dígitos',
+        'País: Alemanha, +49',
+        'Alemanha',
+      ),
     ]) {
       testWidgets('textos y nombres de países en $locale', (tester) async {
         final handle = tester.ensureSemantics();

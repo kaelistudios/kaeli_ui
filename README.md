@@ -163,6 +163,7 @@ cuál toca; `layout: KaeliChoiceLayout.segmented` la fija (selectores de vista e
 | Estilo | Para | Cómo |
 | --- | --- | --- |
 | Tarjetas con ícono (como «Especialidades») | cosas con identidad propia: especialidades, tipos de cita, «¿Dónde?», consultorios | `layout: KaeliChoiceLayout.cards`; varias a la vez: `KaeliMultiChoice`; una tarjeta suelta: `KaeliChoiceCard` |
+| Cuadrícula de botones iguales (como «Título»: Lic. · Licda. · Dr.) | muchas opciones cortas de una palabra o dos; la elegida se llena, sin ✓ | `layout: KaeliChoiceLayout.grid` (0.17.0), `columns:` (3 por defecto) |
 | Lista agrupada con círculo (como «Política de cancelación») | valores simples: horas, minutos, estados, filtros, idioma, tema | `layout: KaeliChoiceLayout.list` (o `auto`) |
 
 Cuando el valor puede ser libre, siempre «Otra/Otro» al final con `other: KaeliChoiceOther(label:, selected:,

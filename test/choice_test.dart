@@ -225,4 +225,56 @@ void main() {
     );
     expect(find.byType(SegmentedButton<int>), findsOneWidget);
   });
+
+  group('cuadrícula (0.17.0)', () {
+    const titles = ['Lic.', 'Licda.', 'Dr.', 'Dra.', 'Teacher'];
+    Widget grid(String? value, ValueChanged<String> onChanged, {bool other = false}) => KaeliChoice<String>(
+      layout: KaeliChoiceLayout.grid,
+      value: other ? null : value,
+      options: [for (final t in titles) KaeliOption(t, t)],
+      onChanged: onChanged,
+      other: KaeliChoiceOther(
+        label: 'Otro',
+        selected: other,
+        onSelected: () {},
+        field: const TextField(key: Key('otro')),
+      ),
+    );
+
+    testWidgets('3 columnas iguales; la elegida se llena, sin ✓ y sin cambiar de tamaño', (tester) async {
+      await pump(tester, grid(null, (_) {}));
+      final before = tester.getSize(find.byType(KaeliChoiceTile).first);
+      expect(tester.getTopLeft(find.text('Licda.')).dy, tester.getTopLeft(find.text('Dr.')).dy);
+      expect(tester.getTopLeft(find.text('Dra.')).dy, greaterThan(tester.getTopLeft(find.text('Dr.')).dy));
+      for (final tile in tester.widgetList<KaeliChoiceTile>(find.byType(KaeliChoiceTile))) {
+        expect(tester.getSize(find.byWidget(tile)), before);
+      }
+      await pump(tester, grid('Lic.', (_) {}));
+      expect(tester.getSize(find.byType(KaeliChoiceTile).first), before);
+      expect(find.byIcon(Icons.check), findsNothing);
+      expect(find.byIcon(Icons.check_circle), findsNothing);
+      final material = tester.widget<Material>(
+        find.descendant(of: find.byType(KaeliChoiceTile).first, matching: find.byType(Material)),
+      );
+      final theme = Theme.of(tester.element(find.byType(KaeliChoiceTile).first));
+      expect(material.color, theme.colorScheme.primary);
+    });
+
+    testWidgets('«Otro» muestra su campo debajo', (tester) async {
+      await pump(tester, grid(null, (_) {}));
+      expect(find.byKey(const Key('otro')), findsNothing);
+      await pump(tester, grid(null, (_) {}, other: true));
+      expect(find.byKey(const Key('otro')), findsOneWidget);
+    });
+
+    testWidgets('con letra al 200 % no corta palabras: usa menos columnas', (tester) async {
+      tester.view.physicalSize = const Size(320, 900);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await pump(tester, grid(null, (_) {}), textScale: 2);
+      expect(tester.takeException(), isNull);
+      final teacher = tester.getSize(find.text('Teacher'));
+      expect(teacher.height, lessThan(60), reason: 'una sola línea');
+    });
+  });
 }
