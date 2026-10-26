@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -48,32 +49,34 @@ void main() {
     expect(ok2.onPressed, isNotNull);
   });
 
-  testWidgets('0.13.0: tocar «mes año» cambia los días por las ruedas en la MISMA ventana; «Listo» vuelve al mes elegido',
-      (tester) async {
-    await open(tester, initial: DateTime(2024, 3, 5), last: DateTime(2030));
-    expect(find.text('Marzo 2024'), findsOneWidget);
-    await tester.tap(find.byKey(KaeliDatePickerDialog.monthButtonKey));
-    await tester.pumpAndSettle();
-    expect(find.byType(AlertDialog), findsOneWidget, reason: 'una sola ventana, sin hoja encima');
-    expect(find.byType(BottomSheet), findsNothing);
-    expect(find.text('Elige mes y año'), findsOneWidget);
-    expect(find.byKey(KaeliMonthYearPicker.monthWheelKey), findsOneWidget);
-    expect(find.text('Aceptar'), findsNothing, reason: 'mientras, solo «Cancelar» y «Listo»');
-    final month = find.byKey(KaeliMonthYearPicker.monthWheelKey);
-    final extent = tester.getSize(month).height / 5;
-    await tester.drag(month, Offset(0, -extent * 2));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(KaeliMonthYearPicker.doneKey));
-    await tester.pumpAndSettle();
-    expect(find.text('Mayo 2024'), findsOneWidget);
-    expect(find.text('Aceptar'), findsOneWidget, reason: 'vuelven los días y sus botones');
-    // «Cancelar» de las ruedas vuelve a los días sin cambiar el mes.
-    await tester.tap(find.byKey(KaeliDatePickerDialog.monthButtonKey));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(KaeliMonthYearPicker.cancelKey));
-    await tester.pumpAndSettle();
-    expect(find.text('Mayo 2024'), findsOneWidget);
-  });
+  testWidgets(
+    '0.13.0: tocar «mes año» cambia los días por las ruedas en la MISMA ventana; «Listo» vuelve al mes elegido',
+    (tester) async {
+      await open(tester, initial: DateTime(2024, 3, 5), last: DateTime(2030));
+      expect(find.text('Marzo 2024'), findsOneWidget);
+      await tester.tap(find.byKey(KaeliDatePickerDialog.monthButtonKey));
+      await tester.pumpAndSettle();
+      expect(find.byType(AlertDialog), findsOneWidget, reason: 'una sola ventana, sin hoja encima');
+      expect(find.byType(BottomSheet), findsNothing);
+      expect(find.text('Elige mes y año'), findsOneWidget);
+      expect(find.byKey(KaeliMonthYearPicker.monthWheelKey), findsOneWidget);
+      expect(find.text('Aceptar'), findsNothing, reason: 'mientras, solo «Cancelar» y «Listo»');
+      final month = find.byKey(KaeliMonthYearPicker.monthWheelKey);
+      final extent = tester.getSize(month).height / 5;
+      await tester.drag(month, Offset(0, -extent * 2));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(KaeliMonthYearPicker.doneKey));
+      await tester.pumpAndSettle();
+      expect(find.text('Mayo 2024'), findsOneWidget);
+      expect(find.text('Aceptar'), findsOneWidget, reason: 'vuelven los días y sus botones');
+      // «Cancelar» de las ruedas vuelve a los días sin cambiar el mes.
+      await tester.tap(find.byKey(KaeliDatePickerDialog.monthButtonKey));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(KaeliMonthYearPicker.cancelKey));
+      await tester.pumpAndSettle();
+      expect(find.text('Mayo 2024'), findsOneWidget);
+    },
+  );
 
   // 0.14.0: la semana empieza en lunes en todos los idiomas; en español, «X» para el miércoles.
   Future<List<String>> weekdayRow(WidgetTester tester, Locale locale, {int? firstDayOfWeek}) async {
@@ -86,7 +89,12 @@ void main() {
         home: Builder(
           builder: (context) => TextButton(
             onPressed: () => firstDayOfWeek == null
-                ? showKaeliDatePicker(context, openAt: DateTime(2026, 10, 1), first: DateTime(2026), last: DateTime(2027))
+                ? showKaeliDatePicker(
+                    context,
+                    openAt: DateTime(2026, 10, 1),
+                    first: DateTime(2026),
+                    last: DateTime(2027),
+                  )
                 : showKaeliDatePicker(
                     context,
                     openAt: DateTime(2026, 10, 1),
@@ -109,7 +117,15 @@ void main() {
   testWidgets('0.14.0: lunes primero en español (con «X») y en inglés; domingo si se pide', (tester) async {
     expect(await weekdayRow(tester, const Locale('es', 'US')), ['L', 'M', 'X', 'J', 'V', 'S', 'D']);
     expect(await weekdayRow(tester, const Locale('en', 'US')), ['M', 'T', 'W', 'T', 'F', 'S', 'S']);
-    expect(await weekdayRow(tester, const Locale('en', 'US'), firstDayOfWeek: DateTime.sunday), ['S', 'M', 'T', 'W', 'T', 'F', 'S']);
+    expect(await weekdayRow(tester, const Locale('en', 'US'), firstDayOfWeek: DateTime.sunday), [
+      'S',
+      'M',
+      'T',
+      'W',
+      'T',
+      'F',
+      'S',
+    ]);
   });
 
   testWidgets('0.15.0: los días ocupados salen tachados y no se pueden elegir', (tester) async {
@@ -144,5 +160,38 @@ void main() {
     await tester.tap(find.text('Aceptar'));
     await tester.pumpAndSettle();
     expect(result, isNull, reason: 'no se eligió nada: el 21 está ocupado (ni de entrada ni tocándolo)');
+  });
+
+  testWidgets('0.16.0: letra al 200 % en pantalla pequeña: las ruedas de mes y año caben en el calendario', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.view.reset);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) => TextButton(
+            onPressed: () => showKaeliDatePicker(
+              context,
+              initial: DateTime(2026, 10, 5),
+              first: DateTime(2025),
+              last: DateTime(2028),
+            ),
+            child: const Text('ir'),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('ir'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(KaeliDatePickerDialog.monthButtonKey));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    final wheel = find.byKey(KaeliMonthYearPicker.monthWheelKey);
+    final picker = tester.widget<CupertinoPicker>(wheel);
+    expect(tester.getSize(wheel).height / picker.itemExtent, greaterThanOrEqualTo(3));
   });
 }

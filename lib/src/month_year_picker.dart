@@ -8,6 +8,7 @@ import 'package:intl/date_symbols.dart';
 import 'package:intl/intl.dart' show Intl;
 
 import 'strings.dart';
+import 'wheel_rows.dart';
 
 /// Abre una hoja desde abajo con dos ruedas, meses y años (como el selector de hora del iPhone), con ✕ y ✓.
 /// Devuelve el primer día del mes elegido, o null si se cerró con ✕ o deslizando.
@@ -190,66 +191,45 @@ class _KaeliMonthYearPickerState extends State<KaeliMonthYearPicker> {
       ),
     );
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (widget.showTitle)
-          Padding(
-            padding: const EdgeInsetsDirectional.only(bottom: 12),
-            child: Text(widget.title ?? texts.monthYearTitle, style: titleStyle),
-          ),
-        SizedBox(
-          height: itemExtent * 5,
-          child: DefaultTextStyle(
-            style: style,
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 5,
-                  child: wheel(
-                    key: KaeliMonthYearPicker.monthWheelKey,
-                    controller: _months,
-                    count: 12,
-                    label: (i) => names[i],
-                    onChanged: (i) => _month = i + 1,
-                    semantics: names[_month - 1],
-                  ),
-                ),
-                Expanded(
-                  flex: 4,
-                  child: wheel(
-                    key: KaeliMonthYearPicker.yearWheelKey,
-                    controller: _years,
-                    count: _last.year - _first.year + 1,
-                    label: (i) => '${_first.year + i}',
-                    onChanged: (i) => _year = _first.year + i,
-                    semantics: '$_year',
-                  ),
-                ),
-              ],
+    return KaeliWheelRows(
+      itemExtent: itemExtent,
+      title: widget.showTitle ? Text(widget.title ?? texts.monthYearTitle, style: titleStyle) : null,
+      wheels: DefaultTextStyle(
+        style: style,
+        child: Row(
+          children: [
+            Expanded(
+              flex: 5,
+              child: wheel(
+                key: KaeliMonthYearPicker.monthWheelKey,
+                controller: _months,
+                count: 12,
+                label: (i) => names[i],
+                onChanged: (i) => _month = i + 1,
+                semantics: names[_month - 1],
+              ),
             ),
-          ),
+            Expanded(
+              flex: 4,
+              child: wheel(
+                key: KaeliMonthYearPicker.yearWheelKey,
+                controller: _years,
+                count: _last.year - _first.year + 1,
+                label: (i) => '${_first.year + i}',
+                onChanged: (i) => _year = _first.year + i,
+                semantics: '$_year',
+              ),
+            ),
+          ],
         ),
-        // Botones de texto como los de los demás diálogos (0.13.0: antes eran ✕ y ✓).
-        Padding(
-          padding: const EdgeInsetsDirectional.only(top: 8),
-          child: OverflowBar(
-            alignment: MainAxisAlignment.end,
-            spacing: 8,
-            children: [
-              TextButton(
-                key: KaeliMonthYearPicker.cancelKey,
-                onPressed: widget.onCancel,
-                child: Text(texts.cancel),
-              ),
-              TextButton(
-                key: KaeliMonthYearPicker.doneKey,
-                onPressed: () => widget.onConfirm(_value),
-                child: Text(texts.monthYearDone),
-              ),
-            ],
-          ),
+      ),
+      // Botones de texto como los de los demás diálogos (0.13.0: antes eran ✕ y ✓).
+      actions: [
+        TextButton(key: KaeliMonthYearPicker.cancelKey, onPressed: widget.onCancel, child: Text(texts.cancel)),
+        TextButton(
+          key: KaeliMonthYearPicker.doneKey,
+          onPressed: () => widget.onConfirm(_value),
+          child: Text(texts.monthYearDone),
         ),
       ],
     );

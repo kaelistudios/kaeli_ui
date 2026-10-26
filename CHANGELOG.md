@@ -1,5 +1,23 @@
 # Cambios
 
+## 0.16.0 (25 oct 2026)
+
+Pedido en la prueba de Blunkoo 1.0.0 (11) en iPhone. Sin cambios que rompan en la API.
+
+- `showKaeliTimePicker` / `KaeliTimePicker`: el MISMO estilo que el calendario: ventana (encima de todo, también de la
+  barra de pestañas) con título «Elige la hora» (`KaeliUiStrings.timeTitle`, 4 idiomas), ruedas propias de hora,
+  minutos y, con el reloj de 12 horas, a. m./p. m., con la letra del diálogo y filas que crecen con ella (antes, la
+  rueda del sistema dejaba los números aplastados), y botones de texto «Cancelar» y «Listo» (antes ✕ y ✓ en una hoja).
+  Claves para las pruebas: `hourWheelKey`, `minuteWheelKey`, `periodWheelKey`, `cancelKey`, `doneKey`. Las pruebas que
+  tocaban ✓ (`Icons.check`) tienen que usar `doneKey`.
+- Ruedas de mes y año (sueltas o dentro del calendario) y de la hora con letra grande en pantalla pequeña: muestran
+  menos filas cuando no caben (nunca menos de 3) y, si ni así cabe, la ventana se desplaza; nunca se salen por abajo
+  (lo de 0.9.1, que no había pasado al rediseño de 0.13). Lo común está en `KaeliWheelRows`.
+- `KaeliChoice`: nunca corta una palabra («Cuatrimest/res»): si una palabra no cabe entera en su segmento (con la
+  letra del teléfono), va como lista. `KaeliChoice.wordsFitSegments` por si una pantalla lo necesita.
+- `KaeliWeekdayPicker`: en un espacio angosto (un diálogo en un teléfono pequeño) los círculos se achican (hasta 28) y
+  los 7 días caben; antes cada día pedía 44 de ancho y el domingo se salía del borde.
+
 ## 0.15.0 (25 oct 2026)
 
 - `showKaeliDatePicker` / `KaeliDatePickerDialog`: nuevo `isUnavailable` para los días ocupados (reservas, bloqueos):

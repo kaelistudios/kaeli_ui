@@ -52,8 +52,10 @@ class KaeliWeekdayPicker extends StatelessWidget {
       children: [
         LayoutBuilder(
           builder: (context, c) {
-            const gap = 6.0;
-            final side = ((c.maxWidth - gap * 6) / 7).clamp(36.0, 52.0);
+            // 0.16.0: en un espacio angosto (un diálogo en un teléfono pequeño) los círculos se achican hasta 28 y
+            // los espacios hasta 2, para que el domingo no se salga del borde.
+            final gap = c.maxWidth < 7 * 36 + 6 * 6 ? 2.0 : 6.0;
+            final side = ((c.maxWidth - gap * 6) / 7).clamp(28.0, 52.0);
             return Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -138,8 +140,10 @@ class _Day extends StatelessWidget {
       enabled: enabled,
       label: name,
       excludeSemantics: true,
+      // 0.16.0: el ancho es el del círculo (los 7 caben siempre en la fila; antes cada uno pedía 44 y en un diálogo
+      // angosto el domingo se salía del borde). El alto sigue siendo de al menos 44 para tocarlo fácil.
       child: SizedBox(
-        width: side < 44 ? 44 : side,
+        width: side,
         height: 44 > side ? 44 : side,
         child: Center(
           child: Material(

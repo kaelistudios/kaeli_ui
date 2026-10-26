@@ -103,7 +103,11 @@ class KaeliChoice<T> extends StatelessWidget {
       _ => layout,
     };
     final body = switch (resolved) {
-      KaeliChoiceLayout.segmented => _segments(context),
+      // 0.16.0: nunca se corta una palabra («Cuatrimest/res»): si alguna no cabe en su segmento, va como lista.
+      KaeliChoiceLayout.segmented => LayoutBuilder(
+        builder: (context, constraints) =>
+            wordsFitSegments(context, options, constraints.maxWidth) ? _segments(context) : _list(context),
+      ),
       KaeliChoiceLayout.cards => _cards(context),
       _ => _list(context),
     };
@@ -120,6 +124,31 @@ class KaeliChoice<T> extends StatelessWidget {
     );
   }
 
+  /// ¿Cada palabra de cada opción cabe entera en su segmento de [width]? (Con la letra del botón y el tamaño de letra
+  /// del teléfono.)
+  static bool wordsFitSegments(BuildContext context, List<KaeliOption<Object?>> options, double width) {
+    if (!width.isFinite || options.isEmpty) return true;
+    final theme = Theme.of(context);
+    final style = theme.segmentedButtonTheme.style?.textStyle?.resolve({}) ?? theme.textTheme.labelLarge;
+    final scaler = MediaQuery.textScalerOf(context);
+    // Cada segmento: su parte del ancho, menos el relleno a los lados y el borde.
+    final room = width / options.length - 2 * 12 - 2;
+    for (final option in options) {
+      for (final word in option.label.split(RegExp(r'\s+'))) {
+        final painter = TextPainter(
+          text: TextSpan(text: word, style: style),
+          textDirection: Directionality.of(context),
+          textScaler: scaler,
+          maxLines: 1,
+        )..layout();
+        final fits = painter.width <= room;
+        painter.dispose();
+        if (!fits) return false;
+      }
+    }
+    return true;
+  }
+
   Widget _segments(BuildContext context) => SizedBox(
     width: double.infinity,
     child: SegmentedButton<T>(
@@ -129,7 +158,10 @@ class KaeliChoice<T> extends StatelessWidget {
         for (final o in options)
           ButtonSegment<T>(
             value: o.value,
-            label: KeyedSubtree(key: o.key, child: Text(o.label, textAlign: TextAlign.center, maxLines: 2)),
+            label: KeyedSubtree(
+              key: o.key,
+              child: Text(o.label, textAlign: TextAlign.center, maxLines: 2),
+            ),
           ),
       ],
       selected: {?value},

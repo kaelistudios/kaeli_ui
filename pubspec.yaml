@@ -1,6 +1,6 @@
 name: kaeli_ui
 description: "Teclado, formularios, teléfono con código de país, selectores, tutorial, compartir, calificar y número del ícono para las apps Flutter de Kaeli."
-version: 0.15.0
+version: 0.16.0
 publish_to: none
 
 environment:

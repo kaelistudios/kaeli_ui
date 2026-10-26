@@ -20,7 +20,10 @@ void main() {
         KaeliChoice<String>(
           layout: layout,
           value: 'a',
-          options: const [KaeliOption('a', 'Uno', key: Key('op.a')), KaeliOption('b', 'Dos', key: Key('op.b'))],
+          options: const [
+            KaeliOption('a', 'Uno', key: Key('op.a')),
+            KaeliOption('b', 'Dos', key: Key('op.b')),
+          ],
           onChanged: (v) => picked = v,
         ),
       );
@@ -184,5 +187,42 @@ void main() {
       textScale: 2,
     );
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('0.16.0: nunca corta una palabra: si «Cuatrimestres» no cabe en su segmento, va como lista', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(300, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: KaeliChoice<int>(
+            value: 1,
+            layout: KaeliChoiceLayout.segmented,
+            options: const [KaeliOption(1, 'Anual'), KaeliOption(2, 'Semestres'), KaeliOption(3, 'Cuatrimestresssss')],
+            onChanged: (_) {},
+          ),
+        ),
+      ),
+    );
+    expect(find.byType(SegmentedButton<int>), findsNothing);
+    expect(find.text('Cuatrimestresssss'), findsOneWidget);
+  });
+
+  testWidgets('0.16.0: con espacio, el segmentado de siempre', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: KaeliChoice<int>(
+            value: 1,
+            options: const [KaeliOption(1, 'Anual'), KaeliOption(2, 'Semestres'), KaeliOption(3, 'Cuatrimestres')],
+            onChanged: (_) {},
+          ),
+        ),
+      ),
+    );
+    expect(find.byType(SegmentedButton<int>), findsOneWidget);
   });
 }

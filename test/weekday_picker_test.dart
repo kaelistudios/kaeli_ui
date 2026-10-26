@@ -45,4 +45,31 @@ void main() {
     }
     expect(tester.getSemantics(find.bySemanticsLabel('dia2')), isSemantics(isSelected: false));
   });
+
+  testWidgets('0.16.0: en un espacio angosto (un diálogo en un teléfono pequeño) los 7 días caben', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: 240,
+              child: KaeliWeekdayPicker(
+                value: const {1},
+                onChanged: (_) {},
+                initials: (d) => 'LMXJVSD'[d - 1],
+                names: (d) => '$d',
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    expect(tester.takeException(), isNull);
+    expect(
+      tester.getTopRight(find.text('D')).dx,
+      lessThanOrEqualTo(tester.getTopRight(find.byType(SizedBox).first).dx + 400),
+    );
+    final picker = tester.getRect(find.byType(KaeliWeekdayPicker));
+    expect(tester.getRect(find.text('D')).right, lessThanOrEqualTo(picker.right));
+  });
 }
