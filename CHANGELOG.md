@@ -1,5 +1,15 @@
 # Cambios
 
+## 0.18.0 (30 oct 2026)
+
+Pedido en Blunkoo (maqueta completa: el tutorial y el calendario con la forma y el relleno de cada tema). Sin cambios
+que rompan en la API: sin los parámetros nuevos, todo se ve igual que en 0.17.0.
+
+- `KaeliTour` / `showKaeliTour` / `showKaeliTourOnce`: `iconRadius` opcional. Sin él, el ícono grande va en un círculo
+  (como siempre); con él, en un cuadrado con ese radio (el del tema de la app).
+- `showKaeliDatePicker` / `KaeliDatePickerDialog`: `selectedDayColor` y `selectedDayGradient` opcionales para el
+  relleno del día elegido (por ejemplo, el degradado del botón principal de un tema). Sin ellos, `colorScheme.primary`.
+
 ## 0.17.0 (26 oct 2026)
 
 Pedido en Sesly #142 (título del perfil). Sin cambios que rompan en la API.

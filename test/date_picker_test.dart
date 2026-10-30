@@ -5,7 +5,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kaeli_ui/kaeli_ui.dart';
 
 void main() {
-  Future<DateTime?> open(WidgetTester tester, {DateTime? initial, DateTime? openAt, required DateTime last}) async {
+  Future<DateTime?> open(
+    WidgetTester tester, {
+    DateTime? initial,
+    DateTime? openAt,
+    required DateTime last,
+    Color? selectedDayColor,
+    Gradient? selectedDayGradient,
+  }) async {
     DateTime? result;
     await tester.pumpWidget(
       MaterialApp(
@@ -21,6 +28,8 @@ void main() {
                 openAt: openAt,
                 first: DateTime(1990),
                 last: last,
+                selectedDayColor: selectedDayColor,
+                selectedDayGradient: selectedDayGradient,
               );
             },
             child: const Text('abrir'),
@@ -193,5 +202,34 @@ void main() {
     final wheel = find.byKey(KaeliMonthYearPicker.monthWheelKey);
     final picker = tester.widget<CupertinoPicker>(wheel);
     expect(tester.getSize(wheel).height / picker.itemExtent, greaterThanOrEqualTo(3));
+  });
+
+  // 0.18.0: relleno del día elegido.
+  BoxDecoration dayBox(WidgetTester tester, String day) =>
+      tester.widget<Container>(find.ancestor(of: find.text(day), matching: find.byType(Container)).first).decoration!
+          as BoxDecoration;
+
+  testWidgets('sin relleno propio, el día elegido usa el color principal (como siempre)', (tester) async {
+    await open(tester, initial: DateTime(2020, 6, 10), last: DateTime(2020, 6, 30));
+    final context = tester.element(find.text('10'));
+    expect(dayBox(tester, '10').color, Theme.of(context).colorScheme.primary);
+    expect(dayBox(tester, '10').gradient, isNull);
+  });
+
+  testWidgets('con color o degradado, el día elegido los usa', (tester) async {
+    await open(tester, initial: DateTime(2020, 6, 10), last: DateTime(2020, 6, 30), selectedDayColor: Colors.teal);
+    expect(dayBox(tester, '10').color, Colors.teal);
+    await tester.tap(find.text('Cancelar'));
+    await tester.pumpAndSettle();
+    const gradient = LinearGradient(colors: [Colors.cyan, Colors.purple]);
+    await open(
+      tester,
+      initial: DateTime(2020, 6, 10),
+      last: DateTime(2020, 6, 30),
+      selectedDayColor: Colors.teal,
+      selectedDayGradient: gradient,
+    );
+    expect(dayBox(tester, '10').gradient, gradient);
+    expect(dayBox(tester, '10').color, isNull);
   });
 }

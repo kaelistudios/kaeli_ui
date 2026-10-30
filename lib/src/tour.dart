@@ -92,11 +92,12 @@ Future<bool> showKaeliTourOnce(
   String key = KaeliTourMemory.defaultKey,
   KaeliTourStrings? strings,
   KaeliTourPageBuilder? pageBuilder,
+  double? iconRadius,
 }) async {
   if (await KaeliTourMemory.seen(key: key)) return false;
   await KaeliTourMemory.markSeen(key: key);
   if (!context.mounted) return false;
-  await showKaeliTour(context, pages: pages, strings: strings, pageBuilder: pageBuilder);
+  await showKaeliTour(context, pages: pages, strings: strings, pageBuilder: pageBuilder, iconRadius: iconRadius);
   return true;
 }
 
@@ -106,6 +107,7 @@ Future<void> showKaeliTour(
   required List<KaeliTourPage> pages,
   KaeliTourStrings? strings,
   KaeliTourPageBuilder? pageBuilder,
+  double? iconRadius,
 }) => Navigator.of(context).push(
   MaterialPageRoute<void>(
     fullscreenDialog: true,
@@ -113,6 +115,7 @@ Future<void> showKaeliTour(
       pages: pages,
       strings: strings,
       pageBuilder: pageBuilder,
+      iconRadius: iconRadius,
       onFinished: () => Navigator.of(context).pop(),
     ),
   ),
@@ -123,8 +126,14 @@ typedef KaeliTourPageBuilder = Widget Function(BuildContext context, KaeliTourPa
 
 /// La pantalla del tutorial (si la app prefiere ponerla en su router en vez de usar [showKaeliTour]).
 class KaeliTour extends StatefulWidget {
-  const KaeliTour({super.key, required this.pages, required this.onFinished, this.strings, this.pageBuilder})
-    : assert(pages.length > 0);
+  const KaeliTour({
+    super.key,
+    required this.pages,
+    required this.onFinished,
+    this.strings,
+    this.pageBuilder,
+    this.iconRadius,
+  }) : assert(pages.length > 0);
 
   final List<KaeliTourPage> pages;
 
@@ -136,6 +145,10 @@ class KaeliTour extends StatefulWidget {
   /// Diseño propio de cada página (lo de arriba de los puntos y el botón). Por defecto: visual, título y texto
   /// centrados.
   final KaeliTourPageBuilder? pageBuilder;
+
+  /// Forma del ícono grande (0.18.0): sin valor, un círculo (como siempre); con valor, un cuadrado con ese radio
+  /// (por ejemplo, el del tema de la app).
+  final double? iconRadius;
 
   static const skipKey = Key('kaeliTour.skip');
   static const nextKey = Key('kaeliTour.next');
@@ -191,7 +204,9 @@ class _KaeliTourState extends State<KaeliTour> {
                 onPageChanged: (i) => setState(() => _index = i),
                 itemBuilder: (context, i) => Semantics(
                   label: texts.pageOf!.replaceAll('{n}', '${i + 1}').replaceAll('{total}', '$total'),
-                  child: widget.pageBuilder?.call(context, widget.pages[i]) ?? _DefaultTourPage(page: widget.pages[i]),
+                  child:
+                      widget.pageBuilder?.call(context, widget.pages[i]) ??
+                      _DefaultTourPage(page: widget.pages[i], iconRadius: widget.iconRadius),
                 ),
               ),
             ),
@@ -232,9 +247,10 @@ class _KaeliTourState extends State<KaeliTour> {
 }
 
 class _DefaultTourPage extends StatelessWidget {
-  const _DefaultTourPage({required this.page});
+  const _DefaultTourPage({required this.page, this.iconRadius});
 
   final KaeliTourPage page;
+  final double? iconRadius;
 
   @override
   Widget build(BuildContext context) {
@@ -248,7 +264,11 @@ class _DefaultTourPage extends StatelessWidget {
               Container(
                 width: 120,
                 height: 120,
-                decoration: BoxDecoration(color: theme.colorScheme.primaryContainer, shape: BoxShape.circle),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primaryContainer,
+                  shape: iconRadius == null ? BoxShape.circle : BoxShape.rectangle,
+                  borderRadius: iconRadius == null ? null : BorderRadius.circular(iconRadius!),
+                ),
                 child: Icon(page.icon, size: 56, color: theme.colorScheme.onPrimaryContainer),
               ),
           const SizedBox(height: 32),

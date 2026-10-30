@@ -156,4 +156,33 @@ void main() {
     expect(find.bySemanticsLabel(RegExp('Página 1 de 3')), findsOneWidget);
     handle.dispose();
   });
+
+  // 0.18.0: forma del ícono grande.
+  BoxDecoration iconBox(WidgetTester tester) =>
+      tester
+              .widget<Container>(
+                find.ancestor(of: find.byIcon(Icons.edit_note), matching: find.byType(Container)).first,
+              )
+              .decoration!
+          as BoxDecoration;
+
+  testWidgets('sin iconRadius, el ícono va en un círculo (como siempre)', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: KaeliTour(pages: _pages, onFinished: () {}),
+      ),
+    );
+    expect(iconBox(tester).shape, BoxShape.circle);
+    expect(iconBox(tester).borderRadius, isNull);
+  });
+
+  testWidgets('con iconRadius, en un cuadrado con ese radio', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: KaeliTour(pages: _pages, onFinished: () {}, iconRadius: 12),
+      ),
+    );
+    expect(iconBox(tester).shape, BoxShape.rectangle);
+    expect(iconBox(tester).borderRadius, BorderRadius.circular(12));
+  });
 }

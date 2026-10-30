@@ -14,6 +14,8 @@ import 'strings.dart';
 ///   web de reservas. Los de fuera de [first]–[last] solo salen apagados.
 /// - [firstDayOfWeek] (0.14.0): la semana empieza en lunes en todos los idiomas (`DateTime.monday`, por defecto);
 ///   `DateTime.sunday` la empieza en domingo. Antes seguía al idioma (en inglés de EE. UU., domingo).
+/// - [selectedDayColor] y [selectedDayGradient] (0.18.0): el relleno del día elegido (por ejemplo, el degradado del
+///   botón principal de un tema). Sin ellos, `colorScheme.primary`, como siempre.
 Future<DateTime?> showKaeliDatePicker(
   BuildContext context, {
   DateTime? initial,
@@ -24,6 +26,8 @@ Future<DateTime?> showKaeliDatePicker(
   KaeliUiStrings? strings,
   int firstDayOfWeek = DateTime.monday,
   bool Function(DateTime day)? isUnavailable,
+  Color? selectedDayColor,
+  Gradient? selectedDayGradient,
 }) => showDialog<DateTime>(
   context: context,
   builder: (context) => KaeliDatePickerDialog(
@@ -35,6 +39,8 @@ Future<DateTime?> showKaeliDatePicker(
     strings: strings,
     firstDayOfWeek: firstDayOfWeek,
     isUnavailable: isUnavailable,
+    selectedDayColor: selectedDayColor,
+    selectedDayGradient: selectedDayGradient,
   ),
 );
 
@@ -49,6 +55,8 @@ class KaeliDatePickerDialog extends StatefulWidget {
     this.strings,
     this.firstDayOfWeek = DateTime.monday,
     this.isUnavailable,
+    this.selectedDayColor,
+    this.selectedDayGradient,
   });
 
   final DateTime? initial;
@@ -63,6 +71,12 @@ class KaeliDatePickerDialog extends StatefulWidget {
 
   /// Días ocupados: tachados y sin poder elegirse (0.15.0).
   final bool Function(DateTime day)? isUnavailable;
+
+  /// Relleno del día elegido (0.18.0); sin él, `colorScheme.primary`.
+  final Color? selectedDayColor;
+
+  /// Degradado del día elegido (0.18.0); si está, tapa a [selectedDayColor].
+  final Gradient? selectedDayGradient;
 
   /// Llave del botón «mes año ▾» (pruebas).
   static const monthButtonKey = Key('kaeli-date-month');
@@ -134,7 +148,8 @@ class _KaeliDatePickerDialogState extends State<KaeliDatePickerDialog> {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: selected ? colors.primary : null,
+              color: selected && widget.selectedDayGradient == null ? widget.selectedDayColor ?? colors.primary : null,
+              gradient: selected ? widget.selectedDayGradient : null,
               border: isToday && !selected ? Border.all(color: colors.primary) : null,
             ),
             child: Text(
