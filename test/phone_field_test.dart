@@ -403,4 +403,43 @@ void main() {
       expect(find.text('Código'), findsOneWidget);
     });
   });
+
+  group('etiquetas arriba (0.19.0)', () {
+    InputDecorator countryBox(WidgetTester tester) => tester.widget<InputDecorator>(
+      find.descendant(of: find.byKey(KaeliPhoneField.countryKey), matching: find.byType(InputDecorator)),
+    );
+
+    testWidgets('sin labelsAbove, «País» flota en el borde del código (como antes)', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(body: KaeliPhoneField(defaultCountry: 'CR')),
+        ),
+      );
+      expect(countryBox(tester).decoration.labelText, 'Country');
+    });
+
+    testWidgets('con labelsAbove, «País» y la etiqueta del número van arriba, alineadas y sin flotar', (tester) async {
+      await pumpKaeliApp(
+        tester,
+        const Scaffold(
+          body: KaeliPhoneField(defaultCountry: 'CR', labelsAbove: true, numberLabel: 'Número de WhatsApp'),
+        ),
+      );
+      expect(countryBox(tester).decoration.labelText, isNull);
+      final country = find.text('País');
+      final number = find.text('Número de WhatsApp');
+      expect(country, findsOneWidget);
+      expect(number, findsOneWidget);
+      // Las dos etiquetas a la misma altura, encima de sus cajas.
+      expect(tester.getTopLeft(country).dy, tester.getTopLeft(number).dy);
+      expect(
+        tester.getBottomLeft(country).dy,
+        lessThan(tester.getTopLeft(find.byKey(KaeliPhoneField.countryKey)).dy + 1),
+      );
+      expect(
+        tester.getTopLeft(find.byKey(KaeliPhoneField.countryKey)).dy,
+        tester.getTopLeft(find.byKey(KaeliPhoneField.numberKey)).dy,
+      );
+    });
+  });
 }

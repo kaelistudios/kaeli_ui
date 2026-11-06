@@ -150,7 +150,21 @@ class KaeliPhoneField extends StatefulWidget {
     this.textInputAction,
     this.enabled = true,
     this.autovalidateMode,
+    this.labelsAbove = false,
+    this.numberLabel,
+    this.labelStyle,
   });
+
+  /// 0.19.0: etiquetas fijas ARRIBA de cada caja («País» sobre el código y [numberLabel] sobre el número), con
+  /// [labelStyle] (por defecto `labelLarge`), como los demás campos de las apps que ponen la etiqueta arriba. Sin esto,
+  /// «País» va flotando en el borde del código (como siempre).
+  final bool labelsAbove;
+
+  /// 0.19.0: etiqueta del número cuando [labelsAbove] (p. ej. «Número de WhatsApp»).
+  final String? numberLabel;
+
+  /// 0.19.0: estilo de las etiquetas cuando [labelsAbove].
+  final TextStyle? labelStyle;
 
   /// Número guardado en formato E.164 («+50660895761»), o null.
   final String? initialValue;
@@ -363,43 +377,46 @@ class _KaeliPhoneFieldState extends State<KaeliPhoneField> {
       builder: (field) => Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Semantics(
-            button: true,
-            enabled: widget.enabled,
-            label: texts.countryLabel!
-                .replaceAll('{name}', country.name(_languageCode))
-                .replaceAll('{dial}', country.dial),
-            excludeSemantics: true,
-            child: InkWell(
-              key: KaeliPhoneField.countryKey,
-              onTap: widget.enabled ? _pickCountry : null,
-              borderRadius: BorderRadius.circular(4),
-              child: IntrinsicWidth(
-                child: InputDecorator(
-                  // El mismo borde, relleno y tamaño que el campo del número; la etiqueta siempre arriba.
-                  decoration: InputDecoration(
-                    labelText: texts.country,
-                    floatingLabelBehavior: FloatingLabelBehavior.always,
-                    enabled: widget.enabled,
-                    border: d.border,
-                    enabledBorder: d.enabledBorder,
-                    focusedBorder: d.focusedBorder,
-                    disabledBorder: d.disabledBorder,
-                    filled: d.filled,
-                    fillColor: d.fillColor,
-                    isDense: d.isDense,
-                    contentPadding: d.contentPadding,
-                    // Mismo alto que el número cuando este lleva ayuda debajo (0.12.0: el ejemplo del país).
-                    helperText: (d.helperText != null || widget.showExample) ? ' ' : null,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(country.flag, style: theme.textTheme.titleMedium),
-                      const SizedBox(width: 6),
-                      Text('+${country.dial}', style: theme.textTheme.bodyLarge),
-                      Icon(Icons.arrow_drop_down, color: theme.colorScheme.onSurfaceVariant),
-                    ],
+          _labeled(
+            texts.country,
+            Semantics(
+              button: true,
+              enabled: widget.enabled,
+              label: texts.countryLabel!
+                  .replaceAll('{name}', country.name(_languageCode))
+                  .replaceAll('{dial}', country.dial),
+              excludeSemantics: true,
+              child: InkWell(
+                key: KaeliPhoneField.countryKey,
+                onTap: widget.enabled ? _pickCountry : null,
+                borderRadius: BorderRadius.circular(4),
+                child: IntrinsicWidth(
+                  child: InputDecorator(
+                    // El mismo borde, relleno y tamaño que el campo del número; la etiqueta siempre arriba.
+                    decoration: InputDecoration(
+                      labelText: widget.labelsAbove ? null : texts.country,
+                      floatingLabelBehavior: widget.labelsAbove ? null : FloatingLabelBehavior.always,
+                      enabled: widget.enabled,
+                      border: d.border,
+                      enabledBorder: d.enabledBorder,
+                      focusedBorder: d.focusedBorder,
+                      disabledBorder: d.disabledBorder,
+                      filled: d.filled,
+                      fillColor: d.fillColor,
+                      isDense: d.isDense,
+                      contentPadding: d.contentPadding,
+                      // Mismo alto que el número cuando este lleva ayuda debajo (0.12.0: el ejemplo del país).
+                      helperText: (d.helperText != null || widget.showExample) ? ' ' : null,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(country.flag, style: theme.textTheme.titleMedium),
+                        const SizedBox(width: 6),
+                        Text('+${country.dial}', style: theme.textTheme.bodyLarge),
+                        Icon(Icons.arrow_drop_down, color: theme.colorScheme.onSurfaceVariant),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -407,31 +424,51 @@ class _KaeliPhoneFieldState extends State<KaeliPhoneField> {
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: TextField(
-              key: KaeliPhoneField.numberKey,
-              controller: _text,
-              focusNode: _focus,
-              enabled: widget.enabled,
-              keyboardType: TextInputType.phone,
-              textInputAction: widget.textInputAction,
-              autofillHints: const [AutofillHints.telephoneNumberNational],
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9+()\-. ]')),
-                // 0.12.0: con los espacios del país mientras se escribe («8555 3333»).
-                _TypingFormatter(() => _country),
-              ],
-              decoration: d.copyWith(
-                errorText: field.errorText ?? _liveError,
-                // 0.12.0: un número de ejemplo del país elegido (si la app no puso su propia ayuda).
-                hintText: d.hintText ?? kaeliPhoneExample(country),
-                helperText:
-                    d.helperText ??
-                    (widget.showExample ? texts.example?.replaceAll('{number}', kaeliPhoneExample(country)) : null),
+            child: _labeled(
+              widget.numberLabel,
+              TextField(
+                key: KaeliPhoneField.numberKey,
+                controller: _text,
+                focusNode: _focus,
+                enabled: widget.enabled,
+                keyboardType: TextInputType.phone,
+                textInputAction: widget.textInputAction,
+                autofillHints: const [AutofillHints.telephoneNumberNational],
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9+()\-. ]')),
+                  // 0.12.0: con los espacios del país mientras se escribe («8555 3333»).
+                  _TypingFormatter(() => _country),
+                ],
+                decoration: d.copyWith(
+                  errorText: field.errorText ?? _liveError,
+                  // 0.12.0: un número de ejemplo del país elegido (si la app no puso su propia ayuda).
+                  hintText: d.hintText ?? kaeliPhoneExample(country),
+                  helperText:
+                      d.helperText ??
+                      (widget.showExample ? texts.example?.replaceAll('{number}', kaeliPhoneExample(country)) : null),
+                ),
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  /// Con [KaeliPhoneField.labelsAbove], [label] fijo encima de [child]; si no, [child] solo.
+  Widget _labeled(String? label, Widget child) {
+    if (!widget.labelsAbove) return child;
+    final style = widget.labelStyle ?? Theme.of(context).textTheme.labelLarge;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ExcludeSemantics(
+          child: Text(label ?? '', style: style, maxLines: 1, overflow: TextOverflow.ellipsis),
+        ),
+        const SizedBox(height: 4),
+        child,
+      ],
     );
   }
 }

@@ -1,5 +1,13 @@
 # Cambios
 
+## 0.19.0 (5 nov 2026)
+
+Pedido en AlojaConmigo (encargo del 5 nov 2026: «País» de WhatsApp con la etiqueta arriba, no flotante). Sin cambios
+que rompan en la API: sin los parámetros nuevos, todo se ve igual que en 0.18.0.
+
+- `KaeliPhoneField.labelsAbove`: etiquetas fijas encima de cada caja («País» sobre el código y `numberLabel` sobre el
+  número), a la misma altura, con `labelStyle` (por defecto `labelLarge`). Sin esto, «País» sigue flotando en el borde.
+
 ## 0.18.0 (30 oct 2026)
 
 Pedido en Blunkoo (maqueta completa: el tutorial y el calendario con la forma y el relleno de cada tema). Sin cambios
