@@ -5,6 +5,7 @@ library;
 
 export 'src/app_extras.dart';
 export 'src/badge.dart';
+export 'src/birthday_picker.dart';
 export 'src/choice.dart';
 export 'src/date_picker.dart';
 export 'src/dirty_tracker.dart';

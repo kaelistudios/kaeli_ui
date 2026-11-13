@@ -29,6 +29,8 @@ class KaeliUiStrings {
     this.monthYearDone,
     this.dayUnavailable,
     this.timeTitle,
+    this.birthdayTitle,
+    this.birthdayNoYear,
   });
 
   /// Botón de la barra sobre el teclado de iPhone («Listo»).
@@ -67,6 +69,12 @@ class KaeliUiStrings {
   /// 0.16.0: título del selector de hora («Elige la hora»).
   final String? timeTitle;
 
+  /// 0.20.0: título del selector de cumpleaños («Cumpleaños»).
+  final String? birthdayTitle;
+
+  /// 0.20.0: primera opción de la rueda de años del cumpleaños, para no guardar el año («Sin año»).
+  final String? birthdayNoYear;
+
   /// Textos incluidos, por código de idioma.
   static const Map<String, KaeliUiStrings> builtIn = {
     'es': KaeliUiStrings(
@@ -82,6 +90,8 @@ class KaeliUiStrings {
       monthYearDone: 'Listo',
       dayUnavailable: 'No disponible',
       timeTitle: 'Elige la hora',
+      birthdayTitle: 'Cumpleaños',
+      birthdayNoYear: 'Sin año',
     ),
     'en': KaeliUiStrings(
       done: 'Done',
@@ -96,6 +106,8 @@ class KaeliUiStrings {
       monthYearDone: 'Done',
       dayUnavailable: 'Not available',
       timeTitle: 'Choose the time',
+      birthdayTitle: 'Birthday',
+      birthdayNoYear: 'No year',
     ),
     'fr': KaeliUiStrings(
       done: 'OK',
@@ -110,6 +122,8 @@ class KaeliUiStrings {
       monthYearDone: 'OK',
       dayUnavailable: 'Indisponible',
       timeTitle: "Choisissez l'heure",
+      birthdayTitle: 'Anniversaire',
+      birthdayNoYear: 'Sans année',
     ),
     'pt': KaeliUiStrings(
       done: 'OK',
@@ -124,6 +138,8 @@ class KaeliUiStrings {
       monthYearDone: 'Pronto',
       dayUnavailable: 'Indisponível',
       timeTitle: 'Escolha a hora',
+      birthdayTitle: 'Aniversário',
+      birthdayNoYear: 'Sem ano',
     ),
   };
 
@@ -143,6 +159,8 @@ class KaeliUiStrings {
       monthYearDone: overrides?.monthYearDone ?? base.monthYearDone!,
       dayUnavailable: overrides?.dayUnavailable ?? base.dayUnavailable!,
       timeTitle: overrides?.timeTitle ?? base.timeTitle!,
+      birthdayTitle: overrides?.birthdayTitle ?? base.birthdayTitle!,
+      birthdayNoYear: overrides?.birthdayNoYear ?? base.birthdayNoYear!,
     );
   }
 
@@ -162,6 +180,8 @@ class KaeliUiStrings {
           monthYearDone: other.monthYearDone ?? monthYearDone,
           dayUnavailable: other.dayUnavailable ?? dayUnavailable,
           timeTitle: other.timeTitle ?? timeTitle,
+          birthdayTitle: other.birthdayTitle ?? birthdayTitle,
+          birthdayNoYear: other.birthdayNoYear ?? birthdayNoYear,
         );
 }
 
@@ -181,6 +201,8 @@ class KaeliUiTexts {
     required this.monthYearDone,
     required this.dayUnavailable,
     required this.timeTitle,
+    required this.birthdayTitle,
+    required this.birthdayNoYear,
   });
 
   final String done;
@@ -195,6 +217,8 @@ class KaeliUiTexts {
   final String monthYearDone;
   final String dayUnavailable;
   final String timeTitle;
+  final String birthdayTitle;
+  final String birthdayNoYear;
 
   /// Textos para [context]: idioma de `Localizations`, cambios de [KaeliKeyboard] y, encima, [overrides].
   static KaeliUiTexts of(BuildContext context, [KaeliUiStrings? overrides]) {

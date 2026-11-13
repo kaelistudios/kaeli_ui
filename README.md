@@ -17,6 +17,7 @@ En una prueba en iPhone (18 oct 2026) encontramos estos problemas con el teclado
 | Al cambiar de pestaña, el teclado seguía abierto (la pestaña de antes sigue montada). | `KaeliTabDismiss` lo cierra al cambiar de pestaña. |
 | El botón «Guardar» saltaba con el teclado y tapaba el formulario. | **Regla (0.2.0):** `KaeliFormBottomBar` se queda en su lugar; el contenido se achica hasta el teclado (y la barra «Listo») y se desplaza solo para que el campo que se escribe se vea. Para guardar, se cierra el teclado. |
 | Cambiar de mes en un calendario pedía tocar la flecha muchas veces. | `showKaeliMonthYearPicker`: ruedas de mes y año («Cancelar» y «Listo»), igual en iPhone y Android. **0.4.0:** `showKaeliDatePicker`, el calendario completo que las usa. |
+| Cada app pedía el cumpleaños a su manera y obligaba a poner el año. | **0.20.0:** `showKaeliBirthdayPicker`: ruedas de día y mes, y el año opcional («Sin año»). |
 | Botones sueltos y desordenados para elegir una opción. | **0.4.0:** `KaeliChoice`: 2–3 opciones cortas → control segmentado de ancho completo; 4 o más o textos largos → lista vertical con ícono y círculo. **0.5.0:** tarjetas con ícono (`cards`, `KaeliMultiChoice`) y «Otra» al final (`KaeliChoiceOther`). |
 | Salir de un formulario perdía los cambios sin avisar. | `KaeliUnsavedChangesGuard` pregunta «¿Descartar cambios?» (Descartar / Seguir editando). |
 | Cada app tenía su propio tutorial de primera vez, su «Compartir» y su «Calificar». | **0.7.0:** `showKaeliTourOnce` / `showKaeliTour` (tutorial con «Saltar»), `kaeliShareApp`, `kaeliOpenStoreToRate` y `KaeliReviewPrompt.milestone`. |
@@ -33,7 +34,7 @@ dependencies:
   kaeli_ui:
     git:
       url: https://github.com/kaelistudios/kaeli_ui.git
-      ref: v0.13.1
+      ref: v0.20.0
 ```
 
 Después: `flutter pub get` e `import 'package:kaeli_ui/kaeli_ui.dart';`.
@@ -244,6 +245,39 @@ if (month != null) setState(() => visibleMonth = month); // primer día del mes 
 - Meses en el idioma de la app (datos de `intl`, sin inicializar nada); `monthNames:` los cambia.
 - Colores y letras del tema (`ColorScheme`, `TextTheme`); la rueda crece con la letra del teléfono.
 - `KaeliMonthYearPicker` es el contenido, por si se quiere poner en otro lugar.
+
+### Cumpleaños: `showKaeliBirthdayPicker` (0.20.0)
+
+Día y mes con ruedas, y el año **opcional** (muchas clientas no quieren decir su edad). Mismo estilo que la hora:
+ventana con título «Cumpleaños», «Cancelar» y «Listo», encima de todo (también de la barra de pestañas).
+
+```dart
+final b = await showKaeliBirthdayPicker(
+  context,
+  initial: client.birthday,       // KaeliBirthday? — null: se abre en el día y el mes de hoy, «Sin año»
+  // today: DateTime(2026, 11, 13),  // opcional (pruebas); por defecto DateTime.now()
+  // firstYear: 1920,                // el año más antiguo de la rueda
+);
+if (b != null) save(month: b.month, day: b.day, year: b.year); // year null = sin año
+```
+
+- `KaeliBirthday(month:, day:, year:)` con `==` y `hashCode`; `KaeliBirthday.daysIn(month, year)` da los días del mes.
+- La rueda de años empieza en «Sin año» («No year», «Sans année», «Sem ano») y sigue del año de hoy hacia atrás.
+- El día se ajusta al mes: 29 de febrero se puede sin año o con año bisiesto; si se elige un año no bisiesto, baja a
+  28 (y 31 baja a 30 en los meses cortos).
+- Meses en el idioma de la app (datos de `intl`, como el mes y año); cabe con la letra al 200 % en pantalla pequeña.
+- Pruebas de las apps: `KaeliBirthdayPicker.dayWheelKey`, `monthWheelKey`, `yearWheelKey`, `cancelKey` y `doneKey`
+  (igual a `confirmKey`). Para elegir, se arrastra la rueda una fila por opción:
+
+  ```dart
+  final wheel = find.byKey(KaeliBirthdayPicker.yearWheelKey);
+  final row = tester.widget<CupertinoPicker>(wheel).itemExtent;
+  await tester.drag(wheel, Offset(0, -row * 2)); // Sin año → año actual → año anterior
+  await tester.pumpAndSettle();
+  await tester.tap(find.byKey(KaeliBirthdayPicker.doneKey));
+  ```
+- Título y «Sin año» se cambian con `KaeliUiStrings(birthdayTitle:, birthdayNoYear:)` o con `title:`.
+- `KaeliBirthdayPicker` es el contenido, por si se quiere poner en otro lugar.
 
 ### Teléfono con código de país: `KaeliPhoneField` (0.8.0)
 
