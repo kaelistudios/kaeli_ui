@@ -18,6 +18,7 @@ En una prueba en iPhone (18 oct 2026) encontramos estos problemas con el teclado
 | El botón «Guardar» saltaba con el teclado y tapaba el formulario. | **Regla (0.2.0):** `KaeliFormBottomBar` se queda en su lugar; el contenido se achica hasta el teclado (y la barra «Listo») y se desplaza solo para que el campo que se escribe se vea. Para guardar, se cierra el teclado. |
 | Cambiar de mes en un calendario pedía tocar la flecha muchas veces. | `showKaeliMonthYearPicker`: ruedas de mes y año («Cancelar» y «Listo»), igual en iPhone y Android. **0.4.0:** `showKaeliDatePicker`, el calendario completo que las usa. |
 | Cada app pedía el cumpleaños a su manera y obligaba a poner el año. | **0.20.0:** `showKaeliBirthdayPicker`: ruedas de día y mes, y el año opcional («Sin año»). |
+| Los montos se escribían sin formato («120000») y costaba leerlos. | **0.21.0:** `KaeliAmountFormatter`: «120 000» mientras se escribe, con los separadores del idioma y país, sin que el cursor salte. |
 | Botones sueltos y desordenados para elegir una opción. | **0.4.0:** `KaeliChoice`: 2–3 opciones cortas → control segmentado de ancho completo; 4 o más o textos largos → lista vertical con ícono y círculo. **0.5.0:** tarjetas con ícono (`cards`, `KaeliMultiChoice`) y «Otra» al final (`KaeliChoiceOther`). |
 | Salir de un formulario perdía los cambios sin avisar. | `KaeliUnsavedChangesGuard` pregunta «¿Descartar cambios?» (Descartar / Seguir editando). |
 | Cada app tenía su propio tutorial de primera vez, su «Compartir» y su «Calificar». | **0.7.0:** `showKaeliTourOnce` / `showKaeliTour` (tutorial con «Saltar»), `kaeliShareApp`, `kaeliOpenStoreToRate` y `KaeliReviewPrompt.milestone`. |
@@ -34,7 +35,7 @@ dependencies:
   kaeli_ui:
     git:
       url: https://github.com/kaelistudios/kaeli_ui.git
-      ref: v0.20.0
+      ref: v0.21.0
 ```
 
 Después: `flutter pub get` e `import 'package:kaeli_ui/kaeli_ui.dart';`.
@@ -278,6 +279,28 @@ if (b != null) save(month: b.month, day: b.day, year: b.year); // year null = si
   ```
 - Título y «Sin año» se cambian con `KaeliUiStrings(birthdayTitle:, birthdayNoYear:)` o con `title:`.
 - `KaeliBirthdayPicker` es el contenido, por si se quiere poner en otro lugar.
+
+### Montos con formato al escribir: `KaeliAmountFormatter` (0.21.0)
+
+Un `TextInputFormatter` para cualquier campo de dinero: «120000» se ve «120 000» (es-CR), «120,000» (en-US) o
+«120.000» (pt-BR) mientras se escribe.
+
+```dart
+final amountFormatter = KaeliAmountFormatter.forLocale('es_CR', decimals: 2); // decimales de la moneda (0 para JPY)
+TextField(
+  controller: TextEditingController(text: amountFormatter.format('12000,50')), // valor inicial con el mismo formato
+  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+  inputFormatters: [amountFormatter],
+);
+```
+
+- El decimal se acepta con punto o con coma (lo que traiga el teclado). El separador de miles del idioma tecleado al
+  final también cuenta como decimal (los miles los pone el formato), así la tecla decimal sirve aunque el teclado sea
+  de otro país; pegado o en medio, se ignora. Se cortan los decimales de más; con `decimals: 0` no se puede escribir.
+- El cursor no salta al escribir o borrar en medio; borrar el separador de miles borra la cifra de antes.
+- Sin ceros de más adelante («007» → «7», «,5» → «0,5»). `allowNegative: true` deja un «-» al inicio.
+- El texto que queda solo agrega el separador de miles del idioma: el lector de montos de la app lo lee igual (que
+  ignore ese separador y los espacios finos `U+00A0` y `U+202F`).
 
 ### Teléfono con código de país: `KaeliPhoneField` (0.8.0)
 

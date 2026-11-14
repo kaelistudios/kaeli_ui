@@ -1,5 +1,13 @@
 # Cambios
 
+## 0.21.0 (14 nov 2026)
+
+Pedido en Katawi (Ronda 4, punto 36: precios sin formato al escribir). Sin cambios que rompan en la API.
+
+- `KaeliAmountFormatter` (y `KaeliAmountFormatter.forLocale`): formato de miles mientras se escribe un monto, con los
+  separadores del idioma y país, sin que el cursor salte; decimal con punto o coma, cortado a los de la moneda; `format`
+  para el valor inicial.
+
 ## 0.19.0 (5 nov 2026)
 
 Pedido en AlojaConmigo (encargo del 5 nov 2026: «País» de WhatsApp con la etiqueta arriba, no flotante). Sin cambios

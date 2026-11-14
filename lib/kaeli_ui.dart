@@ -3,6 +3,7 @@
 /// Ver README.md para la lista de integración en 4 pasos.
 library;
 
+export 'src/amount_input.dart';
 export 'src/app_extras.dart';
 export 'src/badge.dart';
 export 'src/birthday_picker.dart';
