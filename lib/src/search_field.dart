@@ -4,12 +4,21 @@
 //
 // Para teléfonos NO se usa este campo: el código de país con bandera es [KaeliPhoneField].
 
+import 'package:flutter/gestures.dart' show kTouchSlop;
 import 'package:flutter/material.dart';
 
 /// Una opción de [KaeliSearchField].
 @immutable
 class KaeliSearchOption<T> {
-  const KaeliSearchOption(this.value, this.label, {this.subtitle, this.icon, this.leading, this.keywords = const [], this.key});
+  const KaeliSearchOption(
+    this.value,
+    this.label, {
+    this.subtitle,
+    this.icon,
+    this.leading,
+    this.keywords = const [],
+    this.key,
+  });
 
   final T value;
 
@@ -180,8 +189,9 @@ List<KaeliSearchOption<T>> kaeliSearchOptions<T>(String query, List<KaeliSearchO
   return limit == null || result.length <= limit ? result : result.sublist(0, limit);
 }
 
-/// La opción conocida que corresponde a lo escrito: el mismo nombre (sin importar tildes ni mayúsculas) o uno muy
-/// parecido («Farmasy» → Farmasi). Null si no hay ninguna; así se agrega como nueva.
+/// La opción conocida que corresponde a lo escrito: el mismo nombre (sin importar tildes ni mayúsculas), una de sus
+/// partes o de sus otros nombres, o uno muy parecido («Farmasy» → Farmasi). Null si no hay ninguna (así se agrega como
+/// nueva) o si se parece igual a dos: no adivina.
 KaeliSearchOption<T>? kaeliMatchOption<T>(String typed, List<KaeliSearchOption<T>> options) {
   final q = kaeliSearchFold(typed);
   if (q.isEmpty) return null;
@@ -190,16 +200,20 @@ KaeliSearchOption<T>? kaeliMatchOption<T>(String typed, List<KaeliSearchOption<T
   }
   final allowed = _allowedTypos(q.length);
   if (allowed == 0) return null;
-  KaeliSearchOption<T>? best;
+  final best = <KaeliSearchOption<T>>[];
   var bestDistance = allowed + 1;
   for (final o in options) {
-    final d = _distance(q, kaeliSearchFold(o.label));
+    final d = _candidates(o).map((c) => _distance(q, c)).fold(bestDistance + 1, (a, b) => a < b ? a : b);
     if (d < bestDistance) {
-      best = o;
+      best
+        ..clear()
+        ..add(o);
       bestDistance = d;
+    } else if (d == bestDistance && d <= allowed) {
+      best.add(o);
     }
   }
-  return best;
+  return best.length == 1 ? best.single : null;
 }
 
 /// Campo con buscador, para todas las apps de Kaeli (regla 8): para listas largas o que crecen. Para 2 a ~10
@@ -293,6 +307,9 @@ class KaeliSearchField<T> extends StatefulWidget {
   /// Clave del texto «No hay coincidencias» (para pruebas).
   static const noResultsKey = Key('kaeliSearch.noResults');
 
+  /// Clave del aviso «ya está agregada» dentro de la lista (para pruebas).
+  static const takenKey = Key('kaeliSearch.taken');
+
   @override
   State<KaeliSearchField<T>> createState() => _KaeliSearchFieldState<T>();
 }
@@ -302,6 +319,10 @@ class _KaeliSearchFieldState<T> extends State<KaeliSearchField<T>> {
   TextEditingController? _ownController;
   FocusNode? _ownFocus;
   var _open = false;
+
+  /// Dónde empezó el último toque fuera del campo: la lista se cierra al soltar solo si no se movió (fue un toque, no
+  /// un desplazamiento de la pantalla).
+  (int, Offset)? _outsideDown;
 
   TextEditingController get _controller => widget.controller ?? (_ownController ??= TextEditingController());
   FocusNode get _focus => widget.focusNode ?? (_ownFocus ??= FocusNode());
@@ -366,7 +387,8 @@ class _KaeliSearchFieldState<T> extends State<KaeliSearchField<T>> {
 
   bool _taken(KaeliSearchOption<T> o) => widget.isTaken?.call(o.value) ?? false;
 
-  KaeliSearchStrings get _texts => KaeliSearchStrings.resolve(Localizations.maybeLocaleOf(context)?.languageCode, widget.strings);
+  KaeliSearchStrings get _texts =>
+      KaeliSearchStrings.resolve(Localizations.maybeLocaleOf(context)?.languageCode, widget.strings);
 
   void _choose(KaeliSearchOption<T> option) {
     if (_taken(option)) {
@@ -396,7 +418,10 @@ class _KaeliSearchFieldState<T> extends State<KaeliSearchField<T>> {
     if (widget.clearOnSelect) {
       _controller.clear();
     } else {
-      _controller.value = TextEditingValue(text: label, selection: TextSelection.collapsed(offset: label.length));
+      _controller.value = TextEditingValue(
+        text: label,
+        selection: TextSelection.collapsed(offset: label.length),
+      );
     }
     if (widget.keepOpenAfterSelect) return;
     _focus.unfocus();
@@ -414,7 +439,10 @@ class _KaeliSearchFieldState<T> extends State<KaeliSearchField<T>> {
   }
 
   List<KaeliSearchOption<T>> _results() {
-    final free = [for (final o in widget.options) if (!_taken(o)) o];
+    final free = [
+      for (final o in widget.options)
+        if (!_taken(o)) o,
+    ];
     // Con el nombre elegido en el campo (clearOnSelect: false), al volver a tocarlo se ve la lista completa.
     final query = !widget.clearOnSelect && free.any((o) => o.label == _controller.text) ? '' : _controller.text;
     return kaeliSearchOptions(query, free, limit: widget.maxResults);
@@ -428,10 +456,19 @@ class _KaeliSearchFieldState<T> extends State<KaeliSearchField<T>> {
     final results = _open ? _results() : <KaeliSearchOption<T>>[];
     final exact = query.isNotEmpty && widget.options.any((o) => _candidates(o).contains(kaeliSearchFold(query)));
     final showAdd = _open && widget.onAddNew != null && query.isNotEmpty && !exact;
+    final taken = exact
+        ? widget.options.where((o) => _taken(o) && _candidates(o).contains(kaeliSearchFold(query)))
+        : null;
+    final takenOption = taken == null || taken.isEmpty ? null : taken.first;
     final showEmpty = _open && query.isNotEmpty && results.isEmpty && !showAdd;
 
     return TapRegion(
-      onTapOutside: (_) => _close(),
+      onTapOutside: (event) => _outsideDown = (event.pointer, event.position),
+      onTapUpOutside: (event) {
+        final down = _outsideDown;
+        _outsideDown = null;
+        if (down != null && down.$1 == event.pointer && (event.position - down.$2).distance < kTouchSlop) _close();
+      },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
@@ -477,7 +514,8 @@ class _KaeliSearchFieldState<T> extends State<KaeliSearchField<T>> {
                       for (final o in results)
                         _SearchRow(
                           key: o.key,
-                          leading: o.leading ?? (o.icon == null ? null : Icon(o.icon, color: theme.colorScheme.primary)),
+                          leading:
+                              o.leading ?? (o.icon == null ? null : Icon(o.icon, color: theme.colorScheme.primary)),
                           label: o.label,
                           subtitle: o.subtitle,
                           onTap: () => _choose(o),
@@ -493,8 +531,10 @@ class _KaeliSearchFieldState<T> extends State<KaeliSearchField<T>> {
                         Padding(
                           padding: const EdgeInsetsDirectional.symmetric(horizontal: 16, vertical: 14),
                           child: Text(
-                            texts.noResults!,
-                            key: KaeliSearchField.noResultsKey,
+                            takenOption == null
+                                ? texts.noResults!
+                                : texts.alreadyAdded!.replaceAll('{name}', takenOption.label),
+                            key: takenOption == null ? KaeliSearchField.noResultsKey : KaeliSearchField.takenKey,
                             style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                           ),
                         ),

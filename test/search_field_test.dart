@@ -4,10 +4,22 @@ import 'package:kaeli_ui/kaeli_ui.dart';
 
 import 'helpers.dart';
 
-const _brands = ['Avon', 'Farmasi', 'Ésika', 'Unique / Yanbal', 'Natura', 'Zermat', 'Cyzone', 'Mary Kay', 'Oriflame', 'Jafra'];
+const _brands = [
+  'Avon',
+  'Farmasi',
+  'Ésika',
+  'Unique / Yanbal',
+  'Natura',
+  'Zermat',
+  'Cyzone',
+  'Mary Kay',
+  'Oriflame',
+  'Jafra',
+];
 final _options = [for (final b in _brands) KaeliSearchOption(b, b)];
 
 const _field = Key('brand');
+const _filler = Key('filler');
 
 class _Host extends StatefulWidget {
   const _Host({this.allowNew = true, this.clearOnSelect = true, this.onTaken});
@@ -31,7 +43,12 @@ class _HostState extends State<_Host> {
         KaeliSearchField<String>(
           fieldKey: _field,
           label: 'Marca',
-          options: _options,
+          // Como haría la app: las que se agregaron como nuevas también son opciones (así no se repiten).
+          options: [
+            ..._options,
+            for (final a in added)
+              if (!_brands.contains(a)) KaeliSearchOption(a, a),
+          ],
           maxResults: 5,
           clearOnSelect: widget.clearOnSelect,
           isTaken: (b) => added.contains(b),
@@ -40,6 +57,7 @@ class _HostState extends State<_Host> {
           onAddNew: widget.allowNew ? (text) => setState(() => added.add(text)) : null,
         ),
         for (final a in added) Text('agregada: $a'),
+        const SizedBox(key: _filler, height: 1200),
       ],
     ),
   );
@@ -56,7 +74,9 @@ void main() {
 
     test('encuentra por una parte del nombre o por otros nombres', () {
       expect(kaeliSearchOptions('yanbal', _options).first.label, 'Unique / Yanbal');
-      final banks = [const KaeliSearchOption('bdb', 'Banco de Bogotá', keywords: ['BdB'])];
+      final banks = [
+        const KaeliSearchOption('bdb', 'Banco de Bogotá', keywords: ['BdB']),
+      ];
       expect(kaeliSearchOptions('bdb', banks).single.value, 'bdb');
     });
 
@@ -77,6 +97,16 @@ void main() {
       expect(kaeliMatchOption('yanbal', _options)?.label, 'Unique / Yanbal');
       expect(kaeliMatchOption('Mi marca', _options), isNull);
     });
+
+    test('si se parece igual a dos, no adivina', () {
+      final twins = [const KaeliSearchOption('a', 'Marcela'), const KaeliSearchOption('b', 'Marcelo')];
+      expect(kaeliMatchOption('Marcele', twins), isNull);
+      expect(kaeliMatchOption('Marcelo', twins)?.value, 'b');
+    });
+
+    test('perdona errores de letra también en una parte del nombre', () {
+      expect(kaeliMatchOption('Yanbak', _options)?.label, 'Unique / Yanbal');
+    });
   });
 
   group('campo', () {
@@ -95,7 +125,11 @@ void main() {
       await pumpKaeliApp(tester, const _Host());
       await tester.tap(find.byKey(_field));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Farmasi'));
+      final press = await tester.startGesture(tester.getCenter(find.text('Farmasi')));
+      await tester.pump();
+      expect(fieldFocused(), isTrue, reason: 'al poner el dedo en la fila, el teclado sigue abierto');
+      expect(find.text('Farmasi'), findsOneWidget);
+      await press.up();
       await tester.pumpAndSettle();
       expect(find.text('agregada: Farmasi'), findsOneWidget);
       expect(find.text('Avon'), findsNothing, reason: 'la lista se cierra al elegir');
@@ -159,12 +193,65 @@ void main() {
       expect(tester.widget<TextField>(find.byKey(_field)).controller!.text, 'Natura');
     });
 
-    testWidgets('textos en el idioma de la app', (tester) async {
-      await pumpKaeliApp(tester, const _Host(), locale: const Locale('pt'));
+    for (final (locale, add) in [
+      ('es', 'Agregar «Nova»'),
+      ('en', 'Add “Nova”'),
+      ('fr', 'Ajouter « Nova »'),
+      ('pt', 'Adicionar “Nova”'),
+    ]) {
+      testWidgets('textos en el idioma de la app ($locale)', (tester) async {
+        await pumpKaeliApp(tester, const _Host(), locale: Locale(locale));
+        await tester.tap(find.byKey(_field));
+        await tester.enterText(find.byKey(_field), 'Nova');
+        await tester.pumpAndSettle();
+        expect(find.text(add), findsOneWidget);
+      });
+    }
+
+    testWidgets('desplazar la pantalla no cierra la lista; tocar fuera sí', (tester) async {
+      await pumpKaeliApp(tester, const _Host());
       await tester.tap(find.byKey(_field));
-      await tester.enterText(find.byKey(_field), 'Nova');
       await tester.pumpAndSettle();
-      expect(find.text('Adicionar “Nova”'), findsOneWidget);
+      expect(find.text('Avon'), findsOneWidget);
+      // Arrastrar desde fuera del campo y de la lista.
+      final outside = tester.getTopLeft(find.byKey(_filler)) + const Offset(20, 40);
+      expect(outside.dy, lessThan(600), reason: 'el punto se ve en la pantalla');
+      await tester.dragFrom(outside, const Offset(0, -60));
+      await tester.pumpAndSettle();
+      expect(find.text('Avon'), findsOneWidget, reason: 'la lista sigue abierta (el teclado se puede cerrar)');
+      await tester.tapAt(tester.getTopLeft(find.byKey(_filler)) + const Offset(20, 40));
+      await tester.pumpAndSettle();
+      expect(find.text('Avon'), findsNothing);
+    });
+
+    testWidgets('una agregada como nueva tampoco se repite', (tester) async {
+      await pumpKaeliApp(tester, const _Host());
+      await tester.tap(find.byKey(_field));
+      await tester.enterText(find.byKey(_field), 'Mi Marca');
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(_field));
+      await tester.enterText(find.byKey(_field), 'mi marca');
+      await tester.pumpAndSettle();
+      expect(find.byKey(KaeliSearchField.addNewKey), findsNothing);
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+      expect(find.text('agregada: Mi Marca'), findsOneWidget);
+      expect(find.text('«Mi Marca» ya está agregada'), findsOneWidget, reason: 'aviso por defecto');
+    });
+
+    testWidgets('al escribir una ya agregada, la lista lo dice (no «No hay coincidencias»)', (tester) async {
+      await pumpKaeliApp(tester, const _Host());
+      await tester.tap(find.byKey(_field));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Avon'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(_field));
+      await tester.enterText(find.byKey(_field), 'Avon');
+      await tester.pumpAndSettle();
+      expect(find.byKey(KaeliSearchField.noResultsKey), findsNothing);
+      expect(find.byKey(KaeliSearchField.takenKey), findsOneWidget);
+      expect(find.text('«Avon» ya está agregada'), findsOneWidget);
     });
   });
 }

@@ -324,9 +324,10 @@ KaeliSearchField<String>(
   («yanbal» → Unique / Yanbal) y por `keywords`, y perdona 1 error de letra desde 5 letras y 2 desde 8 («Farmasy» →
   Farmasi). Primero las que empiezan igual; en empate, el orden de `options`.
 - **«Agregar «lo escrito»»** al final, con `onAddNew`. Si lo escrito se parece a una conocida, se elige la conocida con
-  su nombre oficial; Enter hace lo mismo. Sin `onAddNew` y sin resultados: «No hay coincidencias».
-- **Sin duplicados:** `isTaken` esconde las agregadas; si se escribe una de ellas, `onTaken` (sin él, un aviso
-  ««X» ya está agregada»).
+  su nombre oficial (también con un error de letra en una parte: «Yanbak» → Unique / Yanbal); Enter hace lo mismo. Sin `onAddNew` y sin resultados: «No hay coincidencias».
+- **Sin duplicados:** `isTaken` esconde las agregadas; si se escribe una de ellas, la lista lo dice y, al darle Enter,
+  `onTaken` (sin él, un aviso ««X» ya está agregada»). Las que se agregaron como nuevas también se pasan en `options`
+  (con `isTaken`), así no se repiten. Si lo escrito se parece igual a dos opciones, no adivina: se puede agregar tal cual.
 - **Con el teclado:** el campo sube a la parte de arriba al abrir la lista; tocar una fila no cierra el teclado antes
   de elegirla; desplazar la pantalla cierra el teclado pero no la lista. Se cierra al elegir o al tocar fuera.
 - **Un solo valor** (p. ej. el banco): `clearOnSelect: false`, el campo queda con el nombre elegido. Para agregar

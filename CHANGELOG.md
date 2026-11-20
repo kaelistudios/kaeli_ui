@@ -9,8 +9,8 @@ Sin cambios que rompan en la API.
   La lista se abre **con solo tocar el campo**; al escribir filtra sin importar tildes, mayúsculas ni signos y perdona
   errores de letra (desde 5 letras); al final, «Agregar «lo escrito»» (`onAddNew`). Si lo escrito se parece a una
   opción conocida se elige esa, con su nombre oficial; las ya agregadas no salen (`isTaken`) y, si se vuelven a
-  escribir, `onTaken` (o un aviso). Tocar una fila no cierra el teclado antes de elegirla, y la lista no se cierra al
-  desplazar la pantalla. `clearOnSelect: false` para elegir un solo valor. Textos en es, en, fr y pt
+  escribir, la lista lo dice y `onTaken` (o un aviso). Si se parece igual a dos opciones, no adivina. Tocar una fila no cierra el teclado antes de elegirla, y la lista no se cierra al
+  desplazar la pantalla (se cierra al elegir o con un toque fuera, no al arrastrar). `clearOnSelect: false` para elegir un solo valor. Textos en es, en, fr y pt
   (`KaeliSearchStrings`).
 - `kaeliSearchOptions`, `kaeliMatchOption` y `kaeliSearchFold`: la misma búsqueda, para usarla fuera del campo.
 - Para teléfonos sigue siendo `KaeliPhoneField` (bandera y código de país), no este campo.
