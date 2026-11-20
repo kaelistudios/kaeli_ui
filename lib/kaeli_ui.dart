@@ -19,6 +19,7 @@ export 'src/notice.dart';
 export 'src/page.dart';
 export 'src/phone.dart';
 export 'src/phone_field.dart';
+export 'src/search_field.dart';
 export 'src/strings.dart';
 export 'src/tab_dismiss.dart';
 export 'src/time_picker.dart';

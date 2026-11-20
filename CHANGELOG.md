@@ -1,5 +1,20 @@
 # Cambios
 
+## 0.22.0 (20 nov 2026)
+
+Pedido de Susana (regla 8 de las reglas generales: listas largas con buscador). Sale del buscador de marcas de Katawi.
+Sin cambios que rompan en la API.
+
+- `KaeliSearchField<T>`: campo con buscador para listas largas o que crecen (marcas, bancos, categorías, servicios…).
+  La lista se abre **con solo tocar el campo**; al escribir filtra sin importar tildes, mayúsculas ni signos y perdona
+  errores de letra (desde 5 letras); al final, «Agregar «lo escrito»» (`onAddNew`). Si lo escrito se parece a una
+  opción conocida se elige esa, con su nombre oficial; las ya agregadas no salen (`isTaken`) y, si se vuelven a
+  escribir, `onTaken` (o un aviso). Tocar una fila no cierra el teclado antes de elegirla, y la lista no se cierra al
+  desplazar la pantalla. `clearOnSelect: false` para elegir un solo valor. Textos en es, en, fr y pt
+  (`KaeliSearchStrings`).
+- `kaeliSearchOptions`, `kaeliMatchOption` y `kaeliSearchFold`: la misma búsqueda, para usarla fuera del campo.
+- Para teléfonos sigue siendo `KaeliPhoneField` (bandera y código de país), no este campo.
+
 ## 0.21.0 (14 nov 2026)
 
 Pedido en Katawi (Ronda 4, punto 36: precios sin formato al escribir). Sin cambios que rompan en la API.

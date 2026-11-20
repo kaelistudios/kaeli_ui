@@ -22,6 +22,7 @@ En una prueba en iPhone (18 oct 2026) encontramos estos problemas con el teclado
 | Botones sueltos y desordenados para elegir una opción. | **0.4.0:** `KaeliChoice`: 2–3 opciones cortas → control segmentado de ancho completo; 4 o más o textos largos → lista vertical con ícono y círculo. **0.5.0:** tarjetas con ícono (`cards`, `KaeliMultiChoice`) y «Otra» al final (`KaeliChoiceOther`). |
 | Salir de un formulario perdía los cambios sin avisar. | `KaeliUnsavedChangesGuard` pregunta «¿Descartar cambios?» (Descartar / Seguir editando). |
 | Cada app tenía su propio tutorial de primera vez, su «Compartir» y su «Calificar». | **0.7.0:** `showKaeliTourOnce` / `showKaeliTour` (tutorial con «Saltar»), `kaeliShareApp`, `kaeliOpenStoreToRate` y `KaeliReviewPrompt.milestone`. |
+| Las listas largas (marcas, bancos, categorías) se elegían con botones o listas enormes, y había que escribir para ver algo. | **0.22.0:** `KaeliSearchField`: la lista se abre con solo tocar el campo, busca sin tildes y con errores de letra, y al final «Agregar «lo escrito»». Sale del buscador de marcas de Katawi. |
 | Cada app escribía el teléfono a su manera (con o sin código de país, guardado en formatos distintos). | **0.8.0:** `KaeliPhoneField`: bandera y código a la izquierda, número a la derecha; siempre E.164. |
 | El número del ícono no bajaba al leer los avisos (AlojaConmigo, reporte de Patricia). | **0.10.0:** `KaeliBadge` / `KaeliBadgeSync`: el ícono muestra solo los avisos sin leer que pasa la app; al abrir o volver a la app se limpian las notificaciones ya vistas. |
 | «Este dato es obligatorio» sin decir cuál (el campo quedaba fuera de la pantalla, y con `ListView` los campos de abajo ni se validaban). | **0.3.0:** `KaeliFormList` (todos los campos existen), `kaeliValidateForm` (va al primer error, lo enfoca y lo lee) y `KaeliRequiredLabel` (asterisco desde el principio). |
@@ -35,7 +36,7 @@ dependencies:
   kaeli_ui:
     git:
       url: https://github.com/kaelistudios/kaeli_ui.git
-      ref: v0.21.0
+      ref: v0.22.0
 ```
 
 Después: `flutter pub get` e `import 'package:kaeli_ui/kaeli_ui.dart';`.
@@ -301,6 +302,38 @@ TextField(
 - Sin ceros de más adelante («007» → «7», «,5» → «0,5»). `allowNegative: true` deja un «-» al inicio.
 - El texto que queda solo agrega el separador de miles del idioma: el lector de montos de la app lo lee igual (que
   ignore ese separador y los espacios finos `U+00A0` y `U+202F`).
+
+### Listas largas con buscador: `KaeliSearchField` (0.22.0)
+
+Para listas largas o que crecen: marcas, bancos, categorías, servicios… (regla 8 de las reglas generales). Para 2 a
+~10 opciones fijas, `KaeliChoice`; para teléfonos, `KaeliPhoneField` (lleva la bandera y el código).
+
+```dart
+KaeliSearchField<String>(
+  label: l10n.brand,
+  options: [for (final b in config.knownBrands) KaeliSearchOption(b, b)],   // las de la región primero
+  isTaken: (b) => _brands.any((x) => sameBrand(x.name, b)),               // las agregadas no salen
+  onSelected: (o) => setState(() => _brands.add(NewBrand(o.value, known: true))),
+  onAddNew: (text) => setState(() => _brands.add(NewBrand(text))),          // null: solo de la lista
+  onTaken: (o) => showAlreadyAdded(o.label),                                // opcional
+)
+```
+
+- **Se abre al tocar:** muestra las primeras `maxResults` (8) de `options`, en su orden, sin escribir nada.
+- **Al escribir** filtra sin tildes, mayúsculas, espacios ni signos («esika» → Ésika), por partes del nombre
+  («yanbal» → Unique / Yanbal) y por `keywords`, y perdona 1 error de letra desde 5 letras y 2 desde 8 («Farmasy» →
+  Farmasi). Primero las que empiezan igual; en empate, el orden de `options`.
+- **«Agregar «lo escrito»»** al final, con `onAddNew`. Si lo escrito se parece a una conocida, se elige la conocida con
+  su nombre oficial; Enter hace lo mismo. Sin `onAddNew` y sin resultados: «No hay coincidencias».
+- **Sin duplicados:** `isTaken` esconde las agregadas; si se escribe una de ellas, `onTaken` (sin él, un aviso
+  ««X» ya está agregada»).
+- **Con el teclado:** el campo sube a la parte de arriba al abrir la lista; tocar una fila no cierra el teclado antes
+  de elegirla; desplazar la pantalla cierra el teclado pero no la lista. Se cierra al elegir o al tocar fuera.
+- **Un solo valor** (p. ej. el banco): `clearOnSelect: false`, el campo queda con el nombre elegido. Para agregar
+  varias seguidas sin que se cierre: `keepOpenAfterSelect: true`.
+- Cada opción puede llevar `icon` o `leading` (un punto de color, un logo) y `subtitle`.
+- Textos propios con `strings: KaeliSearchStrings(addNew: l10n.addBrand)` («{text}» es lo escrito).
+- `kaeliSearchOptions(query, options)` y `kaeliMatchOption(text, options)` hacen la misma búsqueda fuera del campo.
 
 ### Teléfono con código de país: `KaeliPhoneField` (0.8.0)
 
