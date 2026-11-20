@@ -464,6 +464,30 @@ MaterialApp.router(
   Swift Package Manager o CocoaPods; Android en Java (sirve con cualquier versión de Kotlin de la app).
 - `kaeli check --app <app>` avisa si una app recibe notificaciones y no usa `KaeliBadge`.
 
+## Medición de uso (`KaeliAnalytics`, 0.23.0)
+
+Solo para las apps que miden (guía completa: `kaeli-tools/docs/ANALITICA.md`). kaeli_ui no trae PostHog: la app le
+pasa un `KaeliAnalyticsSink` (el de PostHog está en `kaeli-tools/templates/analytics/app/posthog_sink.dart`).
+
+```dart
+// main.dart: solo en la app publicada, nunca en pruebas ni con datos de ejemplo.
+if (kReleaseMode && !useFakeData) {
+  KaeliAnalytics.configure(sink: PostHogSink(apiKey: posthogKey), events: {'first_open', 'setup_done'});
+}
+// Al leer el interruptor del servidor y la opción guardada de Ajustes:
+await KaeliAnalytics.update(remote: analyticsEnabled, userAllows: prefs.analyticsAllowed);
+// En el código, con el nombre escrito así (lo revisa `analytics.mjs check`):
+KaeliAnalytics.track('setup_done');
+KaeliAnalytics.track('paywall_seen', {'trigger': 'ajustes'});
+```
+
+- Solo los eventos de `events`; uno que no está: error en las pruebas (assert), se ignora en la app publicada.
+- Propiedades solo con valores fijos (true/false, números pequeños, palabras cortas en minúsculas); las que no, o las
+  que por su nombre parecen datos personales (correo, nombre, teléfono, monto, texto…), se quitan.
+- Nada sale hasta `update(remote: true)` y con la persona de acuerdo (`userAllows`, por defecto sí). Al apagar la
+  opción, el sink borra lo que tenga guardado en el teléfono.
+- Para pruebas: `KaeliAnalytics.resetForTesting()`.
+
 ## Textos e idiomas
 
 Los textos incluidos (barra «Listo», aviso de cambios y ✕/✓ del selector de mes y año) están en español, inglés, francés y portugués; se elige el

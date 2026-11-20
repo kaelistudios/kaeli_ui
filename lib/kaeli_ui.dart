@@ -1,9 +1,10 @@
-/// Teclado, formularios, teléfono con código de país, selectores, tutorial, compartir, calificar y número del ícono, compartidos por las apps Flutter de Kaeli.
+/// Teclado, formularios, teléfono con código de país, selectores, tutorial, compartir, calificar, número del ícono y medición de uso, compartidos por las apps Flutter de Kaeli.
 ///
 /// Ver README.md para la lista de integración en 4 pasos.
 library;
 
 export 'src/amount_input.dart';
+export 'src/analytics.dart';
 export 'src/app_extras.dart';
 export 'src/badge.dart';
 export 'src/birthday_picker.dart';

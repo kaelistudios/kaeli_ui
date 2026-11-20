@@ -1,5 +1,18 @@
 # Cambios
 
+## 0.23.0 (20 nov 2026)
+
+Pedido en AlojaConmigo (la primera app que mide; `kaeli-tools/docs/ANALITICA.md`, paso 1). Sin cambios que rompan en
+la API.
+
+- `KaeliAnalytics`: medición de uso igual en todas las apps. Solo manda los eventos aprobados
+  (`apps/<app>/analytics.yaml` de kaeli-tools; uno que no está falla en las pruebas y se ignora en la app publicada),
+  quita las propiedades que no son valores fijos o que parecen datos personales, y no manda nada hasta que lo permitan
+  el interruptor del servidor (`update(remote: true)`) y la persona (`update(userAllows: …)`, opción en Ajustes). Si el
+  envío falla, la app sigue.
+- `KaeliAnalyticsSink`: quien manda los eventos. kaeli_ui **no depende de PostHog**: el de PostHog va en cada app
+  que mide (`kaeli-tools/templates/analytics/app/posthog_sink.dart`).
+
 ## 0.22.1 (20 nov 2026)
 
 Arreglo de `KaeliSearchField` (pedido de Susana). Sin cambios que rompan en la API.
