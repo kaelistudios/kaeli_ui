@@ -36,7 +36,7 @@ dependencies:
   kaeli_ui:
     git:
       url: https://github.com/kaelistudios/kaeli_ui.git
-      ref: v0.22.0
+      ref: v0.22.1
 ```
 
 Después: `flutter pub get` e `import 'package:kaeli_ui/kaeli_ui.dart';`.
@@ -323,8 +323,10 @@ KaeliSearchField<String>(
 - **Al escribir** filtra sin tildes, mayúsculas, espacios ni signos («esika» → Ésika), por partes del nombre
   («yanbal» → Unique / Yanbal) y por `keywords`, y perdona 1 error de letra desde 5 letras y 2 desde 8 («Farmasy» →
   Farmasi). Primero las que empiezan igual; en empate, el orden de `options`.
-- **«Agregar «lo escrito»»** al final, con `onAddNew`. Si lo escrito se parece a una conocida, se elige la conocida con
-  su nombre oficial (también con un error de letra en una parte: «Yanbak» → Unique / Yanbal); Enter hace lo mismo. Sin `onAddNew` y sin resultados: «No hay coincidencias».
+- **«Agregar «lo escrito»»** al final, con `onAddNew`, solo si lo escrito no se parece a ninguna opción (0.22.1): lo
+  que dice cada fila es lo que se agrega. Si se parece a una conocida («Farmasy» → Farmasi, también con un error en
+  una parte: «Yanbak» → Unique / Yanbal), esa va arriba para tocarla y Enter la elige; si se parece igual a dos, salen
+  las dos y no adivina. Sin `onAddNew` y sin resultados: «No hay coincidencias».
 - **Sin duplicados:** `isTaken` esconde las agregadas; si se escribe una de ellas, la lista lo dice y, al darle Enter,
   `onTaken` (sin él, un aviso ««X» ya está agregada»). Las que se agregaron como nuevas también se pasan en `options`
   (con `isTaken`), así no se repiten. Si lo escrito se parece igual a dos opciones, no adivina: se puede agregar tal cual.
@@ -334,7 +336,8 @@ KaeliSearchField<String>(
   varias seguidas sin que se cierre: `keepOpenAfterSelect: true`.
 - Cada opción puede llevar `icon` o `leading` (un punto de color, un logo) y `subtitle`.
 - Textos propios con `strings: KaeliSearchStrings(addNew: l10n.addBrand)` («{text}» es lo escrito).
-- `kaeliSearchOptions(query, options)` y `kaeliMatchOption(text, options)` hacen la misma búsqueda fuera del campo.
+- `kaeliSearchOptions(query, options)`, `kaeliClosestOptions(text, options)` y `kaeliMatchOption(text, options)` hacen
+  la misma búsqueda fuera del campo.
 
 ### Teléfono con código de país: `KaeliPhoneField` (0.8.0)
 

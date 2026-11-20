@@ -189,17 +189,20 @@ List<KaeliSearchOption<T>> kaeliSearchOptions<T>(String query, List<KaeliSearchO
   return limit == null || result.length <= limit ? result : result.sublist(0, limit);
 }
 
-/// La opción conocida que corresponde a lo escrito: el mismo nombre (sin importar tildes ni mayúsculas), una de sus
-/// partes o de sus otros nombres, o uno muy parecido («Farmasy» → Farmasi). Null si no hay ninguna (así se agrega como
-/// nueva) o si se parece igual a dos: no adivina.
-KaeliSearchOption<T>? kaeliMatchOption<T>(String typed, List<KaeliSearchOption<T>> options) {
+/// Las opciones que corresponden a lo escrito: las que tienen el mismo nombre (sin importar tildes ni mayúsculas), una
+/// de sus partes o de sus otros nombres; si no hay, las más parecidas con errores de letra («Farmasy» → Farmasi), todas
+/// las que se parecen por igual. Vacía si no se parece a ninguna (entonces se puede agregar como nueva). No cuenta el
+/// principio solo («Nat» todavía no es Natura).
+List<KaeliSearchOption<T>> kaeliClosestOptions<T>(String typed, List<KaeliSearchOption<T>> options) {
   final q = kaeliSearchFold(typed);
-  if (q.isEmpty) return null;
-  for (final o in options) {
-    if (_candidates(o).contains(q)) return o;
-  }
+  if (q.isEmpty) return const [];
+  final same = [
+    for (final o in options)
+      if (_candidates(o).contains(q)) o,
+  ];
+  if (same.isNotEmpty) return same;
   final allowed = _allowedTypos(q.length);
-  if (allowed == 0) return null;
+  if (allowed == 0) return const [];
   final best = <KaeliSearchOption<T>>[];
   var bestDistance = allowed + 1;
   for (final o in options) {
@@ -213,7 +216,18 @@ KaeliSearchOption<T>? kaeliMatchOption<T>(String typed, List<KaeliSearchOption<T
       best.add(o);
     }
   }
-  return best.length == 1 ? best.single : null;
+  return best;
+}
+
+/// La opción conocida que corresponde a lo escrito ([kaeliClosestOptions]): el mismo nombre o uno muy parecido
+/// («Farmasy» → Farmasi). Null si no hay ninguna (así se agrega como nueva) o si se parece igual a dos: no adivina.
+KaeliSearchOption<T>? kaeliMatchOption<T>(String typed, List<KaeliSearchOption<T>> options) {
+  final closest = kaeliClosestOptions(typed, options);
+  if (closest.isEmpty) return null;
+  final q = kaeliSearchFold(typed);
+  // Con el mismo nombre, la primera; parecidas por errores de letra, solo si es una.
+  if (_candidates(closest.first).contains(q)) return closest.first;
+  return closest.length == 1 ? closest.single : null;
 }
 
 /// Campo con buscador, para todas las apps de Kaeli (regla 8): para listas largas o que crecen. Para 2 a ~10
@@ -222,8 +236,9 @@ KaeliSearchOption<T>? kaeliMatchOption<T>(String typed, List<KaeliSearchOption<T
 /// - Con **solo tocar el campo** se abre la lista (las primeras [maxResults] de [options], en su orden), sin escribir.
 /// - Al escribir se filtra sin importar tildes, mayúsculas, espacios ni signos, y perdona errores de letra en nombres
 ///   de 5 letras o más.
-/// - Con [onAddNew], al final va «Agregar «lo escrito»» para poner un valor que no está. Si lo escrito se parece a
-///   una opción conocida, se elige esa (con su nombre oficial) en vez de crear otra.
+/// - Con [onAddNew], al final va «Agregar «lo escrito»» para poner un valor que no está, solo si lo escrito no se
+///   parece a ninguna opción. Si se parece a una («Farmasy» → Farmasi), esa va arriba de la lista para tocarla (y
+///   Enter la elige); si se parece igual a dos, salen las dos y no adivina. Lo que dice cada fila es lo que se agrega.
 /// - [isTaken]: las ya agregadas no aparecen; si se vuelve a escribir una, se llama a [onTaken] (o se muestra un aviso).
 /// - El campo sube a la parte de arriba al abrir la lista, para que no quede bajo el teclado. La lista no se cierra al
 ///   desplazar la pantalla (aunque el teclado sí); se cierra al elegir o al tocar fuera.
@@ -404,6 +419,8 @@ class _KaeliSearchFieldState<T> extends State<KaeliSearchField<T>> {
     if (typed.isEmpty) return;
     final known = kaeliMatchOption(typed, widget.options);
     if (known != null) return _choose(known);
+    // Se parece igual a dos o más: no adivina ni la agrega como nueva; se elige tocando una de la lista.
+    if (kaeliClosestOptions(typed, widget.options).isNotEmpty) return;
     final add = widget.onAddNew;
     if (add == null) {
       final results = _results();
@@ -445,7 +462,10 @@ class _KaeliSearchFieldState<T> extends State<KaeliSearchField<T>> {
     ];
     // Con el nombre elegido en el campo (clearOnSelect: false), al volver a tocarlo se ve la lista completa.
     final query = !widget.clearOnSelect && free.any((o) => o.label == _controller.text) ? '' : _controller.text;
-    return kaeliSearchOptions(query, free, limit: widget.maxResults);
+    // Las que corresponden a lo escrito («Farmasy» → Farmasi) van arriba, para tocarlas.
+    final closest = kaeliClosestOptions(query, free);
+    final all = [...closest, ...kaeliSearchOptions(query, free).where((o) => !closest.contains(o))];
+    return all.length <= widget.maxResults ? all : all.sublist(0, widget.maxResults);
   }
 
   @override
@@ -454,12 +474,10 @@ class _KaeliSearchFieldState<T> extends State<KaeliSearchField<T>> {
     final texts = _texts;
     final query = _controller.text.trim();
     final results = _open ? _results() : <KaeliSearchOption<T>>[];
-    final exact = query.isNotEmpty && widget.options.any((o) => _candidates(o).contains(kaeliSearchFold(query)));
-    final showAdd = _open && widget.onAddNew != null && query.isNotEmpty && !exact;
-    final taken = exact
-        ? widget.options.where((o) => _taken(o) && _candidates(o).contains(kaeliSearchFold(query)))
-        : null;
-    final takenOption = taken == null || taken.isEmpty ? null : taken.first;
+    // «Agregar «lo escrito»» solo si no se parece a ninguna: lo que dice la fila es lo que se agrega.
+    final closest = kaeliClosestOptions(query, widget.options);
+    final showAdd = _open && widget.onAddNew != null && query.isNotEmpty && closest.isEmpty;
+    final takenOption = closest.isNotEmpty && closest.every(_taken) ? closest.first : null;
     final showEmpty = _open && query.isNotEmpty && results.isEmpty && !showAdd;
 
     return TapRegion(

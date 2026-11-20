@@ -1,5 +1,17 @@
 # Cambios
 
+## 0.22.1 (20 nov 2026)
+
+Arreglo de `KaeliSearchField` (pedido de Susana). Sin cambios que rompan en la API.
+
+- Lo que dice cada fila es lo que se agrega. Antes, con «Farmasy» salía «Agregar «Farmasy»» y al tocarla se agregaba
+  Farmasi. Ahora, si lo escrito se parece a una opción conocida, esa va **arriba** de la lista para tocarla, y
+  «Agregar «lo escrito»» sale solo cuando no se parece a ninguna. Mientras se escribe el principio («Nat») sigue
+  saliendo «Agregar», porque todavía no es Natura.
+- Si se parece igual a dos, salen las dos y no adivina: Enter no elige ninguna ni agrega lo escrito.
+- Si la parecida ya está agregada, la lista lo dice.
+- Nuevo `kaeliClosestOptions(texto, opciones)`: las que corresponden a lo escrito (las dos si empatan).
+
 ## 0.22.0 (20 nov 2026)
 
 Pedido de Susana (regla 8 de las reglas generales: listas largas con buscador). Sale del buscador de marcas de Katawi.

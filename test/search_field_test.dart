@@ -22,8 +22,9 @@ const _field = Key('brand');
 const _filler = Key('filler');
 
 class _Host extends StatefulWidget {
-  const _Host({this.allowNew = true, this.clearOnSelect = true, this.onTaken});
+  const _Host({this.allowNew = true, this.clearOnSelect = true, this.onTaken, this.brands = _brands});
 
+  final List<String> brands;
   final bool allowNew;
   final bool clearOnSelect;
   final ValueChanged<KaeliSearchOption<String>>? onTaken;
@@ -45,9 +46,9 @@ class _HostState extends State<_Host> {
           label: 'Marca',
           // Como haría la app: las que se agregaron como nuevas también son opciones (así no se repiten).
           options: [
-            ..._options,
+            for (final b in widget.brands) KaeliSearchOption(b, b),
             for (final a in added)
-              if (!_brands.contains(a)) KaeliSearchOption(a, a),
+              if (!widget.brands.contains(a)) KaeliSearchOption(a, a),
           ],
           maxResults: 5,
           clearOnSelect: widget.clearOnSelect,
@@ -104,6 +105,14 @@ void main() {
       expect(kaeliMatchOption('Marcelo', twins)?.value, 'b');
     });
 
+    test('0.22.1: kaeliClosestOptions da la parecida, o las dos si empatan, y nada con solo el principio', () {
+      expect(kaeliClosestOptions('Farmasy', _options).map((o) => o.label), ['Farmasi']);
+      final twins = [const KaeliSearchOption('a', 'Marcela'), const KaeliSearchOption('b', 'Marcelo')];
+      expect(kaeliClosestOptions('Marcele', twins).map((o) => o.value), ['a', 'b']);
+      expect(kaeliClosestOptions('Nat', _options), isEmpty);
+      expect(kaeliClosestOptions('Mi marca', _options), isEmpty);
+    });
+
     test('perdona errores de letra también en una parte del nombre', () {
       expect(kaeliMatchOption('Yanbak', _options)?.label, 'Unique / Yanbal');
     });
@@ -149,6 +158,43 @@ void main() {
       await tester.tap(find.byKey(KaeliSearchField.addNewKey));
       await tester.pumpAndSettle();
       expect(find.text('agregada: Mi Marca'), findsOneWidget);
+    });
+
+    testWidgets('0.22.1: si se parece a una conocida, la fila es la conocida (arriba), sin «Agregar»', (tester) async {
+      await pumpKaeliApp(tester, const _Host());
+      await tester.tap(find.byKey(_field));
+      await tester.enterText(find.byKey(_field), 'Farmasy');
+      await tester.pumpAndSettle();
+      expect(find.byKey(KaeliSearchField.addNewKey), findsNothing, reason: 'no dice «Agregar «Farmasy»»');
+      expect(find.textContaining('Farmasy'), findsOneWidget, reason: 'solo en el campo');
+      final rows = tester.widgetList<Text>(find.descendant(of: find.byType(InkWell), matching: find.byType(Text)));
+      expect(rows.first.data, 'Farmasi', reason: 'la parecida va arriba');
+      await tester.tap(find.text('Farmasi'));
+      await tester.pumpAndSettle();
+      expect(find.text('agregada: Farmasi'), findsOneWidget, reason: 'lo que dice la fila es lo que se agrega');
+    });
+
+    testWidgets('0.22.1: si se parece igual a dos, salen las dos y no adivina', (tester) async {
+      await pumpKaeliApp(tester, const _Host(brands: ['Avon', 'Marcela', 'Marcelo']));
+      await tester.tap(find.byKey(_field));
+      await tester.enterText(find.byKey(_field), 'Marcele');
+      await tester.pumpAndSettle();
+      expect(find.text('Marcela'), findsOneWidget);
+      expect(find.text('Marcelo'), findsOneWidget);
+      expect(find.byKey(KaeliSearchField.addNewKey), findsNothing);
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('agregada:'), findsNothing, reason: 'Enter no adivina ni agrega «Marcele»');
+      expect(find.text('Marcela'), findsOneWidget, reason: 'la lista sigue para elegir');
+    });
+
+    testWidgets('0.22.1: «Agregar» sigue apareciendo mientras se escribe el principio de una conocida', (tester) async {
+      await pumpKaeliApp(tester, const _Host());
+      await tester.tap(find.byKey(_field));
+      await tester.enterText(find.byKey(_field), 'Nat');
+      await tester.pumpAndSettle();
+      expect(find.text('Natura'), findsOneWidget);
+      expect(find.text('Agregar «Nat»'), findsOneWidget);
     });
 
     testWidgets('si lo escrito se parece a una conocida, se agrega la conocida', (tester) async {
